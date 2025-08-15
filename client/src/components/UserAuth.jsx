@@ -105,7 +105,7 @@ export default function UserAuth(props) {
 
       <input type="text" placeholder="Email" value={email} onChange={(e)=> setEmail(e.target.value)} />
 
-      <input type="text" placeholder="Password" value={password} onChange={(e)=> setPassword(e.target.value)} />
+      <input type="password" placeholder="Password" value={password} onChange={(e)=> setPassword(e.target.value)} />
 
       <button onClick={signUp} className='border-2 border-pine-accent p-1 rounded-lg bg-pine-accent text-white'>Sign Up</button>
       <p>already have an account <b onClick={switchForm} className='text-pine-brown'>Sign In</b></p>
@@ -114,7 +114,7 @@ export default function UserAuth(props) {
       <h1>Welcome back</h1>
       <h2>Sign In</h2>
       <input type="text" placeholder="Email" value={email} onChange={(e)=> setEmail(e.target.value)} />
-      <input type="text" placeholder="Password" value={password} onChange={(e)=> setPassword(e.target.value)} />
+      <input type="password" placeholder="Password" value={password} onChange={(e)=> setPassword(e.target.value)} />
       <button onClick={login}>Sign In</button>
       <p>Don't have an account? <b onClick={switchForm}>Sign Up</b></p>
       </div>)}
