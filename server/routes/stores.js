@@ -2,26 +2,32 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
 
-//get all stores
+//this route gets all stores in the store table
 
 router.get("/", async (req, res) => {
-  const { data, error } = await supabase.from("stores").select("*");
-  if (error) {
+  try {
+    const { data } = await supabase.from("stores").select("*");
+    res.status(200).send(data);
+  } catch (error) {
     return res.status(500).json({ error: error.message });
-  } else res.status(200).send(data);
+  }
 });
 
-//get  store by ID
+//the route get  store by ID
+// ,the ID is passed through the params
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
-  const { data, error } = await supabase.from("stores").select().eq("id", id);
-  if (error) {
+
+  try {
+    const { data } = await supabase.from("stores").select().eq("id", id);
+    res.status(200).send(data);
+  } catch (error) {
     return res.status(500).send(error);
-  } else res.status(200).send(data);
+  }
 });
 
-//post store
+//the route post store as a json data with a user_id in store table
 
 router.post("/", async (req, res) => {
   const store = {
@@ -31,26 +37,30 @@ router.post("/", async (req, res) => {
     store_logo_url: "https://example.com/logo.jpg",
   };
 
-  const { data, error } = await supabase.from("stores").insert([store]);
-  if (error) {
+  try {
+    await supabase.from("stores").insert([store]);
+    res.status(200).send("created");
+  } catch (error) {
     res.status(500).json({ error: error.message });
-  } else res.status(200).send("created");
+  }
 });
 
-//delete store by ID
+//delete store and products in it by store ID
+// , ID is passed through params
 
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
-  const { data, error } = await supabase
-    .from("stores")
-    .delete({ count: 1 })
-    .eq("id", id);
-  if (error) {
+
+  try {
+    await supabase.from("stores").delete({ count: 1 }).eq("id", id);
+    res.status(200).send("deleted");
+  } catch (error) {
     return res.status(500).send(error);
-  } else res.status(200).send("deleted");
+  }
 });
 
 //update  store by ID
+// , ID is passed through params
 
 router.put("/:id", async (req, res) => {
   const store = {
@@ -59,13 +69,13 @@ router.put("/:id", async (req, res) => {
     store_logo_url: "https://example.com/logo.jpg",
   };
   const id = req.params.id;
-  const { data, error } = await supabase
-    .from("stores")
-    .update([store])
-    .eq("id", id);
-  if (error) {
+
+  try {
+    await supabase.from("stores").update([store]).eq("id", id);
+    res.status(200).send("updated");
+  } catch (error) {
     return res.status(500).send(error);
-  } else res.status(200).send("updated");
+  }
 });
 
 module.exports = router;
