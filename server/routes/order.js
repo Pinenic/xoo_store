@@ -2,9 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
 
-// -- Insert sample order by Bob Buyer
-// INSERT INTO orders (buyer_id, store_id, total_amount, status, payment_method, shipping_address) VALUES
-// (2, 1, 400.00, 'pending', 'credit_card', '{"address": "123 Main St", "city": "Metropolis"}');
+
 
 router.get("/", async (req, res) => {
   try {
