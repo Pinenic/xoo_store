@@ -1,6 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+//multer for file upload
+
+const storage = multer.diskStorage({
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 //this route gets all stores in the store table
 
@@ -29,17 +42,44 @@ router.get("/:id", async (req, res) => {
 
 //the route post store as a json data with a user_id in store table
 
-router.post("/", async (req, res) => {
+router.post("/", upload.single("file"), async (req, res) => {
+  const File = fs.readFileSync(req.file.path);
+  const dateForImage = await Date.now();
+  const user_id = req.body.user_id;
   const store = {
-    user_id: 7,
-    store_name: "mark’s t-shirt Store",
+    user_id: user_id,
+    store_name: req.body.store_name,
     description: "Unique handmade art.",
     store_logo_url: "https://example.com/logo.jpg",
   };
 
   try {
     await supabase.from("stores").insert([store]);
-    res.status(200).send("created");
+
+    const { data: needToUpdate, error: needToUpdateError } = await supabase
+      .from("stores")
+      .select()
+      .eq("user_id", user_id)
+      .eq("store_logo_url", "https://example.com/logo.jpg");
+    if (needToUpdateError) {
+      return res.status(500).json({ error: needToUpdateError.message });
+    }
+    //ths is store_id
+    const store_id = await needToUpdate[0].id;
+    // this function waits until the product image is posted in the storage
+    await supabase.storage
+      .from(`imageUpload/public/${store_id}`)
+      .upload(`public-uploaded-image-${dateForImage}.jpg`, File);
+
+    //this function wait until it gets the url data and asign it as ImageUrl and update the store
+    const { data, error } = await supabase.storage
+      .from(`imageUpload/public/${store_id}`)
+      .getPublicUrl(`public-uploaded-image-${dateForImage}.jpg`);
+    await supabase
+      .from("stores")
+      .update([{ store_logo_url: data.publicUrl }])
+      .eq("id", store_id);
+    res.status(201).json({ message: "Store created successfully", store_id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -51,11 +91,40 @@ router.post("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
 
+  const folderPath = `public/${id}/`; // e.g., "public/2/"
+  const bucket = "imageUpload";
+
   try {
-    await supabase.from("stores").delete({ count: 1 }).eq("id", id);
-    res.status(200).send("deleted");
-  } catch (error) {
-    return res.status(500).send(error);
+    //  List all files in the folder
+    const { data: files, error: listError } = await supabase.storage
+      .from(bucket)
+      .list(folderPath);
+
+    if (listError) return res.status(500).json({ error: listError.message });
+
+    if (!files || files.length === 0)
+      return res.status(404).json({ message: "No files found in folder." });
+
+    //  Build array of file paths to delete
+    const objectsToDelete = files.map((file) => `${folderPath}${file.name}`);
+
+    //  Delete all files
+    const { data: deleted, error: deleteError } = await supabase.storage
+      .from(bucket)
+      .remove(objectsToDelete);
+
+    if (deleteError)
+      return res.status(500).json({ error: deleteError.message });
+
+    try {
+      // 4. Delete the store
+      await supabase.from("stores").delete({ count: 1 }).eq("id", id);
+      res.status(200).send("store deleted");
+    } catch (error) {
+      return res.status(500).send(error);
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
