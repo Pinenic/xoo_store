@@ -26,6 +26,22 @@ router.get("/", async (req, res) => {
   }
 });
 
+//this route gets all products in a store,
+//the store_id is passed through the query params
+
+router.get("/store/:store_id", async (req, res) => {
+  const store_id = req.params.store_id;
+  try {
+    const { data } = await supabase
+      .from("products")
+      .select()
+      .eq("store_id", store_id);
+    res.status(200).send(data);
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+});
+
 //this route is used to get product by ID in the product table,
 // the ID is passed through the params
 
@@ -45,7 +61,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", upload.single("file"), async (req, res) => {
   const File = fs.readFileSync(req.file.path);
   const dateForImage = await Date.now();
-  const store_id = 1;
+  const store_id = req.body.store_id;
 
   try {
     // this function waits until the product image is posted in the storage
@@ -64,12 +80,12 @@ router.post("/", upload.single("file"), async (req, res) => {
 
     //this is a product json with a ImageUrl and store_id
     const product = {
-      store_id: store_id,
-      name: "bag",
-      description: "strong bags",
-      price: 500,
-      stock: 15,
-      details: { size: "Medium", color: "gray" },
+      store_id: req.body.store_id,
+      name: req.body.product_name,
+      description: req.body.product_description,
+      price: req.body.product_price,
+      stock: req.body.product_stock,
+      details: { size: "medium", color: "different" },
       image_url: ImageUrl,
     };
 
@@ -87,12 +103,24 @@ router.post("/", upload.single("file"), async (req, res) => {
 
 //this route it just delete product by ID,
 // it get the ID through the params
+// it get the store ID from the request body as req.body.store_id
 
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
+  const store_id = await req.body.store_id;
+  const folderPath = `public/${store_id}/`;
   try {
+    const { data } = await supabase.from("products").select().eq("id", id);
+    const image_url = data[0].image_url.split("/");
+
+    //this function delete the image from the storage
+    await supabase.storage
+      .from(`imageUpload`)
+      .remove(`${folderPath}${image_url[10]}`);
+
+    //this function delete the product from the database
     await supabase.from("products").delete({ count: 1 }).eq("id", id);
-    res.status(200).send("deleted");
+    res.status(200).send("product deleted");
   } catch (error) {
     return res.status(500).send(error);
   }
