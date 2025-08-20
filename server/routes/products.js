@@ -133,6 +133,45 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     return res.status(500).send(error);
   }
+
+  
+
+//this function deletes the store image folder if there is no store with the ID of image folder
+//it seaches the store by ID from the folder name
+//at first it gets the list of all folder images in the storage then it checks if the store exists
+//this is used to clean up the storage if developer deletes a store in the database
+
+  try {
+    const data = await supabase.storage.from("imageUpload").list("public");
+    const list = data.data.map((files) => `${files.name}`);
+    list.forEach(async (list) => {
+      try {
+        const { data: deleteThis, error: deleteThisError } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("id", list);
+
+        if (deleteThis === null || deleteThis.length === 0) {
+          const { data, error } = await supabase.storage
+            .from("imageUpload")
+            .list(`public/${list}`);
+
+          const objectsToDelete = data.map(
+            (file) => `public/${list}/${file.name}`
+          );
+          await supabase.storage.from("imageUpload").remove(objectsToDelete);
+        }
+        if (deleteThisError) {
+          return res.status(500).json({ error: "refresh again" });
+        }
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
 });
 
 // route update the product by ID,
