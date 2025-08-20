@@ -16,10 +16,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //this route gets all stores in the store table
+// you can also pass a limit to the number of stores returned using the query parameter `limit`
+// the limit is set to the number of stores if not specified
 
 router.get("/", async (req, res) => {
+  const countLimit = (await supabase.from("stores").select("*")).data.length;
+  const limit = req.query.limit || countLimit; // Default limit to the number of stores if not specified
   try {
-    const { data } = await supabase.from("stores").select("*");
+    const { data } = await supabase.from("stores").select("*").limit(limit);
     res.status(200).send(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -69,7 +73,9 @@ router.post("/", upload.single("file"), async (req, res) => {
     // this function waits until the product image is posted in the storage
     await supabase.storage
       .from(`imageUpload/public/${store_id}`)
-      .upload(`public-uploaded-image-${dateForImage}.jpg`, File);
+      .upload(`public-uploaded-image-${dateForImage}.jpg`, File,{
+  contentType: 'image/jpeg',
+  });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage

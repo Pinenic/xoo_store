@@ -27,6 +27,17 @@ app.use(`/${api}/stores`, storeRoute );
 app.use(`/${api}/seach`,seachRoute);
 app.use(`/${api}/orders`,orderRoute);
 
+app.get("/", async(req, res)=>{
+    try {
+       const data= await supabase.storage
+    .from("imageUpload").list('public');
+// const list=data.map((files)=> `files.name`);
+
+    res.status(200).send(data.data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+})
 
 const port = process.env.PORT || 4000;
 

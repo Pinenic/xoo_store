@@ -6,28 +6,12 @@ const supabase = require("../index");
 
 router.get("/", async (req, res) => {
   try {
-    const { data } = await supabase.from("orders").select("*");
-    res.send(data);
+    const { data } = await supabase.from("order").select("*");
+    res.status(200).send(data);
   } catch (error) {
-    res.status(500).json({ error: error });
+    return res.status(500).json({ error: error });
   }
 });
 
-router.post("/", async (req, res) => {
-  const order = {
-    buyer_id: 4,
-    store_id: 1,
-    total_amount: 500.0,
-    status: "pending",
-    payment_method: "MTN MOMO",
-    shipping_address: { address: "123 Main St", city: "Metropolis" },
-  };
-  try {
-    const { data } = await supabase.from("orders").insert([order]);
-    res.send("order sent");
-  } catch (error) {
-    res.status(500).json({ error: error });
-  }
-});
 
 module.exports = router;

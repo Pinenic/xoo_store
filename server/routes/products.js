@@ -6,6 +6,7 @@ const path = require("path");
 const fs = require("fs");
 
 //multer for file upload
+//this is used to read the file from the request and pass the url to the next function
 
 const storage = multer.diskStorage({
   filename: (req, file, cb) => {
@@ -16,10 +17,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //this route is used to get all the products in the product table
+// you can also pass a limit to the number of products returned using the query parameter `limit`
 
 router.get("/", async (req, res) => {
+  const countLimit= (await supabase.from("products").select("*")).data.length
+  const limit = req.query.limit || countLimit; // Default limit to data limit if all products are requested
   try {
-    const { data } = await supabase.from("products").select("*");
+    const { data } = await supabase.from("products").select("*").limit(limit);
     res.status(200).send(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -28,14 +32,17 @@ router.get("/", async (req, res) => {
 
 //this route gets all products in a store,
 //the store_id is passed through the query params
+//you can also pass a limit to the number of products returned using the query parameter `limit`
 
 router.get("/store/:store_id", async (req, res) => {
   const store_id = req.params.store_id;
+  const countLimit= (await supabase.from("products").select("*").eq("store_id", store_id)).data.length
+  const limit = req.query.limit || countLimit; // Default limit to data limit if all products are requested
   try {
     const { data } = await supabase
       .from("products")
       .select()
-      .eq("store_id", store_id);
+      .eq("store_id", store_id).limit(limit);
     res.status(200).send(data);
   } catch (error) {
     return res.status(500).send(error);
@@ -67,7 +74,9 @@ router.post("/", upload.single("file"), async (req, res) => {
     // this function waits until the product image is posted in the storage
     await supabase.storage
       .from(`imageUpload/public/${store_id}`)
-      .upload(`public-uploaded-image-${dateForImage}.jpg`, File);
+      .upload(`public-uploaded-image-${dateForImage}.jpg`, File,{
+  contentType: 'image/jpeg',
+});
 
     //this function wait until it gets the url data and asign it as ImageUrl
     const { data, error } = await supabase.storage
@@ -149,5 +158,23 @@ router.put("/:id", async (req, res) => {
     return res.status(500).send(error);
   }
 });
+
+
+//this route gets the latest product
+// you can pass a limit to the number of products returned using the query parameter `limit`
+router.get('/latest/first',async(req,res)=>{
+
+const latest=req.query.limit;
+try {
+  const {data}= await supabase.from('products').select('*')
+  .order('created_at', { ascending: false }).limit(latest);
+res.status(200).send(data)
+} catch (error) {
+  res.status(500).json({error:error.message});
+}
+
+})
+
+
 
 module.exports = router;
