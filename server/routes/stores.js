@@ -6,7 +6,6 @@ const path = require("path");
 const fs = require("fs");
 
 //multer for file upload
-
 const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     cb(null, file.originalname);
@@ -18,7 +17,6 @@ const upload = multer({ storage: storage });
 //this route gets all stores in the store table
 // you can also pass a limit to the number of stores returned using the query parameter `limit`
 // the limit is set to the number of stores if not specified
-
 router.get("/", async (req, res) => {
   const countLimit = (await supabase.from("stores").select("*")).data.length;
   const limit = req.query.limit || countLimit; // Default limit to the number of stores if not specified
@@ -29,10 +27,8 @@ router.get("/", async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-
 //the route get  store by ID
 // ,the ID is passed through the params
-
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
 
@@ -43,9 +39,7 @@ router.get("/:id", async (req, res) => {
     return res.status(500).send(error);
   }
 });
-
 //the route post store as a json data with a user_id in store table
-
 router.post("/", upload.single("file"), async (req, res) => {
   const File = fs.readFileSync(req.file.path);
   const dateForImage = await Date.now();
@@ -73,9 +67,9 @@ router.post("/", upload.single("file"), async (req, res) => {
     // this function waits until the product image is posted in the storage
     await supabase.storage
       .from(`imageUpload/public/${store_id}`)
-      .upload(`public-uploaded-image-${dateForImage}.jpg`, File,{
-  contentType: 'image/jpeg',
-  });
+      .upload(`public-uploaded-image-${dateForImage}.jpg`, File, {
+        contentType: "image/jpeg",
+      });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage
@@ -90,10 +84,8 @@ router.post("/", upload.single("file"), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 //delete store and products in it by store ID
 // , ID is passed through params
-
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
 
@@ -108,8 +100,10 @@ router.delete("/:id", async (req, res) => {
 
     if (listError) return res.status(500).json({ error: listError.message });
 
-    if (!files || files.length === 0)
-      return res.status(404).json({ message: "No files found in folder." });
+    if (!files || files.length === 0) {
+      await supabase.from("stores").delete({ count: 1 }).eq("id", id);
+      return res.status(200).send("store deleted");
+    }
 
     //  Build array of file paths to delete
     const objectsToDelete = files.map((file) => `${folderPath}${file.name}`);
@@ -133,10 +127,8 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 //update  store by ID
 // , ID is passed through params
-
 router.put("/:id", async (req, res) => {
   const store = {
     store_name: "mark’s Art Store",
