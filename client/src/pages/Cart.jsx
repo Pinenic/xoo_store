@@ -1,11 +1,74 @@
-import React from 'react'
+import React, { useEffect } from "react";
+import { useCartStore } from "../context/useCart";
+import { Link } from "react-router-dom";
+import CartCard from "../components/CartCard";
 
-export default function Cart(props) {
-    
+export default function Cart({user}) {
+    const { items, fetchCart, addToCart, updateQuantity, removeFromCart, clearCart, loading } = useCartStore();
 
-    return (
+  // useEffect(() => {
+  //   if (user) fetchCart(user.id);
+  // }, [user]);
+
+  if (loading) return <p>Loading cart...</p>;
+
+  
+
+  return (
+    <>
+      <h1>Shopping Cart</h1>
+      <div className="flex justify-evenly h-screen p-4">
+        <div className="flex flex-col border-2 w-2/3 h-[90%] rounded-lg p-4">
+          {items.length === 0 ? (
+        <p className="text-gray-500">Your cart is empty.</p>
+      ) : (
         <>
-            <p>The cart page</p>
-        </>
-    )
+        <ul>
+          {items.map((item) => (
+            <li key={item.productId}>
+              <CartCard item={item}/>
+            </li>
+          ))}
+        </ul></>
+      )}
+            
+        </div>
+
+        {/** The order summary */}
+        <div className="flex flex-col border-2 w-96 h-72 justify-between p-4  rounded-lg">
+          <h2>Order summary</h2>
+          <div className="flex justify-between">
+            <p>Original Price</p>
+            <p>K99</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Savings</p>
+            <p className="text-green-500">- K9</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Delivery</p>
+            <p>K19</p>
+          </div>
+          <hr />
+
+          <div className="flex justify-between">
+            <p className="font-semibold">Total</p>
+            <p>K109</p>
+          </div>
+
+          <div className="flex flex-col w-full  mt-3 justify-between lg:justify-start px-2 gap-2">
+            <Link
+              to={`#`}
+              className="flex justify-center gap-3 items-center text-center p-2 bg-blue-700 text-white rounded-lg text-sm"
+            >
+              {" "}
+              Proceed to checkout{" "}
+            </Link>
+            <p  className="flex justify-center gap-3 items-center text-center px-3text-white w-full p-1 rounded-lg text-sm">or <Link to={"3"}
+           >Continue Shopping</Link></p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

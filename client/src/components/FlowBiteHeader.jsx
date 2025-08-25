@@ -14,19 +14,26 @@ import {
 } from "flowbite-react";
 import { useAuth } from "../context/useAuth";
 import { Link } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
+import { useCartStore } from "../context/useCart";
 
 
 export default function FlowBiteHeader({profile}) {
+    const { items, loading } = useCartStore();
   const { signOut } = useAuth()
   return (<>
   <Navbar fluid light>
     <NavbarBrand>
         <img src="" alt="" />
-        <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Xoo Store</span>
+        <span className="self-center whitespace-nowrap text-xl font-semibold text-black">Xoo Store</span>
     </NavbarBrand>
     {profile ? (
       <>
-      <div className="flex md:order-2">
+      <div className="flex gap-4 items-center md:order-2">
+        <Link to="/cart" className="flex  gap-2 text-gray-600 rounded-full p-[0.6em] hover:bg-gray-600/10">
+        <ShoppingCart />
+        <span>{items.length > 0 ? items.length : ""}</span>
+        </Link>
         <Dropdown
           arrowIcon={false}
           inline
@@ -50,7 +57,9 @@ export default function FlowBiteHeader({profile}) {
     ) : (
       <>
      <div className=" flex items-center md:order-2">
-      
+      <Link to="/cart" className="text-gray-600 rounded-full p-[0.6em] hover:bg-gray-600/10">
+        <ShoppingCart />
+        </Link>
         <Button><Link
               to="/auth"
               className="w-full"
@@ -62,7 +71,7 @@ export default function FlowBiteHeader({profile}) {
       </>
     )}
     <NavbarCollapse>
-        <NavbarLink href="#">
+        <NavbarLink href="/marketplace">
             Marketplace
         </NavbarLink>
         <NavbarLink href="#">

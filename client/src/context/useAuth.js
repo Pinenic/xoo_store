@@ -1,70 +1,107 @@
-import { create } from 'zustand'
-import { supabase } from '../supabase'
-import { useProfile } from './useProfile'
+import { create } from 'zustand';
+import { supabase } from '../supabase';
+import { useProfile } from './useProfile';
+import { useCartStore } from './useCart';
 
 export const useAuth = create((set, get) => ({
   user: null,
+  profile: null,
   session: null,
   loading: true,
   error: null,
+  _listener: null,
 
+  // Initialize session and auth listener
   init: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    set({ session, user: session?.user || null, loading: false })
+    const { data: { session } } = await supabase.auth.getSession();
+    set({ session, user: session?.user || null, loading: false });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        set({ session, user: session?.user || null, loading: false })
-      }
-    )
+      async (_event, session) => {
+        set({ session, user: session?.user || null, loading: false });
 
-    // keep ref to unsubscribe later if needed
-    set({ _listener: subscription })
+        if (session?.user) {
+          const userId = session.user.id;
+
+          // Fetch profile
+          useProfile.getState().fetchProfile(userId);
+
+          // Fetch or create cart
+          const { data: cartData, error: cartError } = await supabase
+            .from('carts')
+            .select('id')
+            .eq('user_id', userId)
+            .single();
+
+          if (!cartError && cartData) {
+            useCartStore.getState().setCartId(cartData.id);
+            useCartStore.getState().fetchCart(userId);
+          }
+        }
+      }
+    );
+
+    set({ _listener: subscription });
   },
 
-  signUp: async (email, password, firstname, lastname, url) => {
-  set({ loading: true, error: null })
-  const { data, error } = await supabase.auth.signUp({ email, password })
-  set({ loading: false, error: error?.message || null })
+  // Signup with profile + cart fetch
+  signUp: async (email, password, firstname, lastname, avatarUrl) => {
+    set({ loading: true, error: null });
 
-  if (!error && data.user) {
-    const { user } = data
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    set({ loading: false, error: error?.message || null });
 
-    // Insert into profiles with firstname & lastname
-    await supabase.from('users').insert({
-      supabase_uid: user.id,
-      email: email,
-      name: firstname + " " + lastname,  // fallback username
-      avatar_url: url,
-    })
+    if (!error && data.user) {
+      const { user } = data;
 
-    // fetch it into Zustand
-    useProfile.getState().fetchProfile(user.id)
-  }
+      // Insert into profiles table
+      await supabase.from('users').insert({
+        supabase_uid: user.id,
+        email,
+        name: firstname + " " + lastname,
+        avatar_url: avatarUrl,
+      });
 
-  return { error }
-},
+      // Fetch profile into Zustand
+      useProfile.getState().fetchProfile(user.id);
 
+      // Fetch cart (trigger ensures cart exists)
+      const { data: cartData, error: cartError } = await supabase
+        .from('carts')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
 
+      if (!cartError && cartData) {
+        useCartStore.getState().setCartId(cartData.id);
+        useCartStore.getState().fetchCart(user.id);
+      }
+    }
+
+    return { error };
+  },
+
+  // Sign in with password + fetch profile + fetch cart
   signIn: async (email, password) => {
-    set({ loading: true });
+    set({ loading: true, error: null });
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      set({ loading: false });
+      set({ loading: false, error: error.message });
       throw error;
     }
 
     const user = data.user;
 
-    // fetch profile from profiles table
+    // Fetch profile from profiles table
     const { data: profile, error: profileError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("supabase_uid", user.id)
+      .from('users')
+      .select('*')
+      .eq('supabase_uid', user.id)
       .single();
 
     if (profileError) {
@@ -73,13 +110,27 @@ export const useAuth = create((set, get) => ({
     }
 
     set({ user, profile, loading: false });
+
+    // Fetch cart
+    const { data: cartData, error: cartError } = await supabase
+      .from('carts')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!cartError && cartData) {
+      useCartStore.getState().setCartId(cartData.id);
+      useCartStore.getState().fetchCart(user.id);
+    }
   },
 
+  // Sign out
   signOut: async () => {
-    set({ loading: true })
-    await supabase.auth.signOut()
-    set({ user: null, session: null, loading: false })
+    set({ loading: true });
+    await supabase.auth.signOut();
+    set({ user: null, session: null, loading: false });
+    useCartStore.getState().clearCart();
   },
 
-  clearError: () => set({ error: null })
-}))
+  clearError: () => set({ error: null }),
+}));

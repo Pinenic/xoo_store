@@ -20,7 +20,7 @@ export default function Hero(props) {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row p-6 gap-8 md:h-screen">
+      <div className="flex flex-col md:flex-row p-6 gap-8 md:h-[40em]">
         <div className="flex flex-col gap-4 md:w-[50%] lg:w-[60%] p-4">
           <h1 className="text-3xl lg:text-5xl font-bold px-4 md:px-1">
             Don't miss out on Exclusive Deals made just for you.
@@ -57,14 +57,18 @@ export default function Hero(props) {
           <hr className="w-[95%] self-center py-2 mt-5" />
           <div className="flex p-4 md:px-1">
             <div className="w-1/2">
-              <h2 className="font-medium text-sm lg:text-lg">Shopping made easy</h2>
+              <h2 className="font-medium text-sm lg:text-lg">
+                Shopping made easy
+              </h2>
               <p className="text-xs lg:text-sm p-1 text-gray-600 md:">
                 With a large range of products from different sellers, there is
                 always something for you
               </p>
             </div>
             <div className="w-1/2">
-              <h2 className="font-medium text-sm lg:text-lg">Best selling experience</h2>
+              <h2 className="font-medium text-sm lg:text-lg">
+                Best selling experience
+              </h2>
               <p className="text-xs lg:text-sm p-1 text-gray-600">
                 Our selling platform helps to cater to your every entrepenuer
                 need
@@ -73,7 +77,10 @@ export default function Hero(props) {
           </div>
         </div>
         <div className="h-[25em] md:h-full md:w-[50%] lg:w-[40%]">
-          <Carousel indicators={false} className="md:h-[45%] lg:h-[80%] bg-cyan-50 border-2 rounded-xl">
+          <Carousel
+            indicators={false}
+            className="md:h-[80%] lg:h-[80%] bg-cyan-50 border-2 rounded-xl"
+          >
             {loading ? (
               <p>Loading...</p>
             ) : (
@@ -103,7 +110,6 @@ export default function Hero(props) {
               ))
             )}
           </Carousel>
-        
         </div>
       </div>
     </>
