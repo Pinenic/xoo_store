@@ -12,16 +12,31 @@ export const useAuth = create((set, get) => ({
   _listener: null,
 
   // Initialize session and auth listener
-  init: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    set({ session, user: session?.user || null, loading: false });
+init: async () => {
+  // Prevent duplicate listener setup
+  if (get()._listener) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        set({ session, user: session?.user || null, loading: false });
+  // Get the current session
+  const { data: { session } } = await supabase.auth.getSession();
+  set({ session, user: session?.user || null, loading: false });
 
-        if (session?.user) {
-          const userId = session.user.id;
+  // Set up the auth state change listener
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (_event, session) => {
+      const currentUser = get().user;
+      const newUser = session?.user || null;
+
+      // Only update state if the user has actually changed
+      if (
+        (!currentUser && newUser) ||
+        (currentUser && !newUser) ||
+        (currentUser?.id !== newUser?.id)
+      ) {
+        set({ session, user: newUser, loading: false });
+
+        // If there's a user, fetch profile and cart
+        if (newUser) {
+          const userId = newUser.id;
 
           // Fetch profile
           useProfile.getState().fetchProfile(userId);
@@ -34,15 +49,22 @@ export const useAuth = create((set, get) => ({
             .single();
 
           if (!cartError && cartData) {
-            useCartStore.getState().setCartId(cartData.id);
-            useCartStore.getState().fetchCart(userId);
+            const cartStore = useCartStore.getState();
+            cartStore.setCartId(cartData.id);
+            cartStore.fetchCart(userId);
           }
         }
+      } else {
+        // If user is unchanged, do nothing
+        console.log("Auth event ignored: user unchanged");
       }
-    );
+    }
+  );
 
-    set({ _listener: subscription });
-  },
+  // Store the listener so we can clean it up later
+  set({ _listener: subscription });
+}
+,
 
   // Signup with profile + cart fetch
   signUp: async (email, password, firstname, lastname, avatarUrl) => {

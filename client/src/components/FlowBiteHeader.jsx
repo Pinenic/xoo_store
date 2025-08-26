@@ -22,7 +22,7 @@ export default function FlowBiteHeader({profile}) {
     const { items, loading } = useCartStore();
   const { signOut } = useAuth()
   return (<>
-  <Navbar fluid light>
+  <Navbar fluid className="sticky top-0 z-50 bg-white">
     <NavbarBrand>
         <img src="" alt="" />
         <span className="self-center whitespace-nowrap text-xl font-semibold text-black">Xoo Store</span>

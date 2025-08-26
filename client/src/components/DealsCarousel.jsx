@@ -29,7 +29,7 @@ export default function DealsCarousel(props) {
           {loading ? ( <p>loading...</p> ) : (imagePairs.map((pair, index) => (
             <div key={index} className="flex justify-between p-8">
               {pair.map((product, idx) => (
-                <CarouselProductCard key={idx} product={product} />
+                <CarouselProductCard key={idx} product={product}/>
               ))}
             </div>
           )))}

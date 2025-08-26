@@ -1,14 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useCartStore } from "../context/useCart";
 import { Link } from "react-router-dom";
 import CartCard from "../components/CartCard";
 
 export default function Cart({user}) {
     const { items, fetchCart, addToCart, updateQuantity, removeFromCart, clearCart, loading } = useCartStore();
+    
+    const [totalPrice, setTotalPrice] = useState(0)
+    const [total, setTotal] = useState(0)
 
-  // useEffect(() => {
-  //   if (user) fetchCart(user.id);
-  // }, [user]);
+   useEffect(() => {
+    if (user) fetchCart(user.id);
+ }, [user]);
 
   if (loading) return <p>Loading cart...</p>;
 
@@ -16,9 +19,9 @@ export default function Cart({user}) {
 
   return (
     <>
-      <h1>Shopping Cart</h1>
-      <div className="flex justify-evenly h-screen p-4">
-        <div className="flex flex-col border-2 w-2/3 h-[90%] rounded-lg p-4">
+      <h1 className="text-xl p-2 font-medium">Shopping Cart</h1>
+      <div className="flex flex-col md:flex-row md:justify-evenly h-screen md:p-4">
+        <div className="flex flex-col w-full h-fit rounded-lg p-4">
           {items.length === 0 ? (
         <p className="text-gray-500">Your cart is empty.</p>
       ) : (
@@ -26,7 +29,7 @@ export default function Cart({user}) {
         <ul>
           {items.map((item) => (
             <li key={item.productId}>
-              <CartCard item={item}/>
+              <CartCard item={item} remove={removeFromCart}/>
             </li>
           ))}
         </ul></>
@@ -35,11 +38,11 @@ export default function Cart({user}) {
         </div>
 
         {/** The order summary */}
-        <div className="flex flex-col border-2 w-96 h-72 justify-between p-4  rounded-lg">
+        <div className="flex flex-col border-2 md:w-96 lg:w-1/2 h-72 justify-between p-4  rounded-lg">
           <h2>Order summary</h2>
           <div className="flex justify-between">
             <p>Original Price</p>
-            <p>K99</p>
+            <p>{total}</p>
           </div>
           <div className="flex justify-between">
             <p>Savings</p>
@@ -58,7 +61,7 @@ export default function Cart({user}) {
 
           <div className="flex flex-col w-full  mt-3 justify-between lg:justify-start px-2 gap-2">
             <Link
-              to={`#`}
+              to={`/`}
               className="flex justify-center gap-3 items-center text-center p-2 bg-blue-700 text-white rounded-lg text-sm"
             >
               {" "}

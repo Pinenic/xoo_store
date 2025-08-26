@@ -22,15 +22,15 @@ export default function QuantitySelector({quantity, setQuantity}) {
   };
 
   return (
-    <div className='flex items-center border-2 rounded-lg w-fit'>
-      <button onClick={handleDecrease} className='w-8'>-</button>
+    <div className='flex items-center border-2 rounded-lg w-fit '>
+      <button onClick={handleDecrease} className='w-5'>-</button>
       <input 
         type="number"
         value={quantity}
         onChange={handleInputChange} // Add the onChange handler
         className='mx-1 w-8 border-2 text-center border-t-transparent border-b-transparent'
       />
-      <button onClick={handleIncrease} className='w-8'>+</button>
+      <button onClick={handleIncrease} className='w-5'>+</button>
     </div>
   );
 };

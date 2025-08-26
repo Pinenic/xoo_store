@@ -11,21 +11,24 @@ import WishListi from './WishListi';
 import ProductDetails from './ProductDetails';
 import Marketplace from './Marketplace';
 import Loader from '../components/Loader';
+import { useCartStore } from '../context/useCart';
 
 export default function App() {
   const { init, loading, user } = useAuth()
   const { fetchProfile, profile } = useProfile()
+  const {fetchCart} = useCartStore()
 
   useEffect(() => {
     init()
-  }, [init])
+  }, [])
 
   useEffect(() => {
     if (user) {
       console.log(user.id)
       fetchProfile(user.id)
+      fetchCart(user.id);
     }
-  }, [user, fetchProfile])
+  }, [user, fetchProfile, fetchCart])
 
   if (loading) return <p>Loading app...</p>
 
