@@ -2,3 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* For WebKit-based browsers (Chrome, Safari, Edge, Opera) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Important to remove any default margin added by the controls */
+}
+
+/* For Mozilla Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Optional: For other browsers that might not support the above */
+input[type="number"] {
+  appearance: textfield; /* Standard property for cross-browser compatibility */
+}
