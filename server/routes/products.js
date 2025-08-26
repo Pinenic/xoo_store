@@ -90,7 +90,7 @@ router.post("/", upload.any(), async (req, res) => {
           description: req.body.product_description,
           price: req.body.product_price,
           stock: req.body.product_stock,
-          details: { size: "medium", color: "different" },
+          details: { size: req.body.product_size, color:req.body.product_color },
           image_url: ImageUrl,
           image_array: [],
         };
@@ -102,16 +102,15 @@ router.post("/", upload.any(), async (req, res) => {
             .insert([product])
             .select();
           array.push(data[0].id);
-          res.status(200).send("product created");
         } catch (error) {
           res.status(500).json({ error: error.message });
         }
       }
 
-      if (array.length > 0) {
+      if (await array.length > 0) {
         if (file.fieldname === "files") {
           const newdateForImage =
-            (await Date.now()) + Math.floor(1000 + Math.random() * 9000);
+            (await Date.now()) + Math.floor(9000 + Math.random() * 9000);
           const File = fs.readFileSync(file.path);
           await supabase.storage
             .from(`imageUpload/public/${store_id}`)
@@ -138,6 +137,7 @@ router.post("/", upload.any(), async (req, res) => {
             .from("products")
             .update({ image_array: obj })
             .eq("id", array[0]);
+         res.status(200).send("product created");
         }
       }
     }
