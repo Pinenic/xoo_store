@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
     );
     if (!wishListForUser || wishListForUser.length === 0) {
       await supabase.from("wish_list").insert([wishList]);
-      res.status(200).send("created");
+      res.status(200).send("product created");
     }
 
     if (wishListForUser.length > 0) {
