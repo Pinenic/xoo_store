@@ -27,7 +27,7 @@ export default function DealsCarousel(props) {
         </div>
         <Carousel pauseOnHover className="h-72 md:h-72 lg:h-72 rounded-xl">
           {loading ? ( <p>loading...</p> ) : (imagePairs.map((pair, index) => (
-            <div key={index} className="flex justify-between p-8">
+            <div key={index} className="flex justify-evenly ">
               {pair.map((product, idx) => (
                 <CarouselProductCard key={idx} product={product}/>
               ))}

@@ -11,7 +11,7 @@ export default function CartCard({ item, remove }) {
   const totalPrice = item.price * qty;
   return (
     <>
-      <div className="flex flex-col md:flex-row justify-between bg-gray-100/50 p-2 md:p-4  rounded-lg h-fit md:h-32">
+      <div className="flex flex-col md:flex-row justify-between bg-gray-100/50 p-2 mb-5 md:p-4  rounded-lg h-fit md:h-32">
         {loading ? (
           <p>loading...</p>
         ) : (

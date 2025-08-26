@@ -14,26 +14,26 @@ export function CarouselProductCard({ product }) {
   return (
     <>
       <Card
-        className="flex gap-4 justify-between max-w-lg max-h-72 p-4"
+        className="flex gap-4 justify-between md:w-1/2 lg:max-w-lg  max-h-48 p-4"
         renderImage={() => (
           <img src={product.thumbnail} alt="image 1" className="w-48" />
         )}
         horizontal
       >
-        <div className="flex flex-col w-64">
-          <h2 className="text-lg font-medium p-1">{product.title}</h2>
+        <div className="flex flex-col md:w-64 lg:w-64">
+          <h2 className=" font-medium p-1">{product.title}</h2>
           <div className="flex p-1 justify-between">
-            <h2 className="text-xl font-semibold">K{product.price}</h2>
+            <h2 className="text font-semibold">K{product.price}</h2>
             <p className="text-sm text-gray-700 mt-1">(34)reviews</p>
           </div>
           <hr />
-          <div className="flex flex-col p-2 py-3">
+          <div className="flex flex-col p-2 py-2">
             <p>Qty:</p>
             <QuantitySelector  quantity={qty} setQuantity={setQty} />
           </div>
           <hr />
-          <div className="flex mt-3 justify-between px-2">
-            <Heart />
+          <div className="flex mt-3 gap-2 px-2">
+            <Heart className="my-auto"/>
             <button
               className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (addToCart(product, qty))}
             >
