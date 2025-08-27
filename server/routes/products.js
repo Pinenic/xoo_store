@@ -4,6 +4,7 @@ const supabase = require("../index");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const {v4:uuid}=require('uuid');
 
 //multer for file upload
 //this is used to read the file from the request and pass the url to the next function
@@ -42,6 +43,7 @@ router.get("/store/:store_id", async (req, res) => {
       .eq("store_id", store_id)
       .limit(limit);
     res.status(200).send(data);
+  
   } catch (error) {
     return res.status(500).send(error);
   }
@@ -62,22 +64,22 @@ router.get("/:id", async (req, res) => {
 router.post("/", upload.any(), async (req, res) => {
   let array = [];
   try {
-    const dateForImage = await Date.now();
-    const store_id = req.body.store_id;
+    const uidFoimage = uuid();
+    const user_id = req.body.user_id;
     for (const file of req.files) {
       if (file.fieldname === "file") {
         const File = fs.readFileSync(file.path);
         // this function waits until the product image is posted in the storage
         await supabase.storage
-          .from(`imageUpload/public/${store_id}`)
-          .upload(`public-uploaded-image-${dateForImage}.jpg`, File, {
+          .from(`imageUpload/public/${user_id}`)
+          .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
             contentType: "image/jpeg",
           });
 
         //this function wait until it gets the url data and asign it as ImageUrl
         const { data, error } = await supabase.storage
-          .from(`imageUpload/public/${store_id}`)
-          .getPublicUrl(`public-uploaded-image-${dateForImage}.jpg`);
+          .from(`imageUpload/public/${user_id}`)
+          .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -109,20 +111,19 @@ router.post("/", upload.any(), async (req, res) => {
 
       if (await array.length > 0) {
         if (file.fieldname === "files") {
-          const newdateForImage =
-            (await Date.now()) + Math.floor(9000 + Math.random() * 9000);
+          const uidFoimages =uuid()
           const File = fs.readFileSync(file.path);
           await supabase.storage
-            .from(`imageUpload/public/${store_id}`)
-            .upload(`public-uploaded-image-${newdateForImage}.jpg`, File, {
+            .from(`imageUpload/public/${user_id}`)
+            .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
               contentType: "image/jpeg",
             });
 
           //this function wait until it gets the url data and asign it as ImageUrl
           const { data: dataForUrl, error: errorForUrl } =
             await supabase.storage
-              .from(`imageUpload/public/${store_id}`)
-              .getPublicUrl(`public-uploaded-image-${newdateForImage}.jpg`);
+              .from(`imageUpload/public/${user_id}`)
+              .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
 
           const { data, error } = await supabase
             .from("products")
@@ -150,8 +151,8 @@ router.post("/", upload.any(), async (req, res) => {
 // it get the store ID from the request body as req.body.store_id
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
-  const store_id = await req.body.store_id;
-  const folderPath = `public/${store_id}/`;
+  const user_id =  req.body.user_id;
+  const folderPath = `public/${user_id}/`;
   try {
     const { data } = await supabase.from("products").select().eq("id", id);
     const image_url = data[0].image_url.split("/");
@@ -168,9 +169,9 @@ router.delete("/:id", async (req, res) => {
     return res.status(500).json({ error });
   }
 
-  //this function deletes the store image folder if there is no store with the ID of image folder
-  //it seaches the store by ID from the folder name
-  //at first it gets the list of all folder images in the storage then it checks if the store exists
+  //this function deletes the store image folder if there is no user with the ID of image folder
+  //it seaches the user by ID from the folder name
+  //at first it gets the list of all folder images in the storage then it checks if the user exists
   //this is used to clean up the storage if developer deletes a store in the database
 
   try {
@@ -179,7 +180,7 @@ router.delete("/:id", async (req, res) => {
     list.forEach(async (list) => {
       try {
         const { data: deleteThis, error: deleteThisError } = await supabase
-          .from("stores")
+          .from("users")
           .select("*")
           .eq("id", list);
 
@@ -206,17 +207,102 @@ router.delete("/:id", async (req, res) => {
 });
 // route update the product by ID,
 // the ID is passed through the params
-router.put("/:id", async (req, res) => {
+router.put("/id", upload.any(), async (req, res) => {
+  let array = [];
   const id = req.params.id;
+  if(req.files){
+try {
+    const uidFoimage = uuid();
+    const user_id = req.body.user_id;
+    for (const file of req.files) {
+      if (file.fieldname === "file") {
+        const File = fs.readFileSync(file.path);
+        // this function waits until the product image is posted in the storage
+        await supabase.storage
+          .from(`imageUpload/public/${user_id}`)
+          .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
+            contentType: "image/jpeg",
+          });
 
+        //this function wait until it gets the url data and asign it as ImageUrl
+        const { data, error } = await supabase.storage
+          .from(`imageUpload/public/${user_id}`)
+          .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
+        const ImageUrl = data.publicUrl;
+
+        //this is a product json with a ImageUrl and store_id
+        const product = {
+          store_id: req.body.store_id,
+          name: req.body.product_name,
+          description: req.body.product_description,
+          price: req.body.product_price,
+          stock: req.body.product_stock,
+          details: { size: req.body.product_size, color:req.body.product_color },
+          image_url: ImageUrl,
+          image_array: [],
+        };
+
+        //this function insert the product json data into the products table
+        try {
+          const { data } = await supabase
+            .from("products")
+            .update([product])
+            .eq('id',id)
+            .select();
+          array.push(data[0].id);
+        } catch (error) {
+          res.status(500).json({ error: error.message });
+        }
+      }
+
+      if (await array.length > 0) {
+        if (file.fieldname === "files") {
+          const uidFoimages =uuid()
+          const File = fs.readFileSync(file.path);
+          await supabase.storage
+            .from(`imageUpload/public/${user_id}`)
+            .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
+              contentType: "image/jpeg",
+            });
+
+          //this function wait until it gets the url data and asign it as ImageUrl
+          const { data: dataForUrl, error: errorForUrl } =
+            await supabase.storage
+              .from(`imageUpload/public/${user_id}`)
+              .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
+
+          const { data, error } = await supabase
+            .from("products")
+            .select("image_array")
+            .eq("id", array[0])
+            .single();
+
+          let obj = data.image_array;
+          obj.push(dataForUrl);
+
+          await supabase
+            .from("products")
+            .update({ image_array: obj })
+            .eq("id", array[0]);
+         res.status(200).send("product created");
+        }
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  }
+  else{
+      
   const product = {
-    store_id: 1,
-    name: "puma",
-    description: "Abstract painting.",
-    price: 150.0,
-    stock: 25,
-    details: { size: "Medium", color: "Blue" },
-    image_url: "https://example.com/painting-a.jpg",
+    name: req.body.product_name,
+    description: req.body.product_description,
+    price: req.body.product_price,
+    stock: req.body.product_stock,
+    details: { size: req.body.product_size, color: req.body.product_color },
   };
 
   try {
@@ -224,6 +310,7 @@ router.put("/:id", async (req, res) => {
     res.status(200).send("updated");
   } catch (error) {
     return res.status(500).send(error);
+  }
   }
 });
 //this route gets the latest product
