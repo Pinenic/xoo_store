@@ -4,6 +4,7 @@ const supabase = require("../index");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const {v4:uuid}=require('uuid');
 
 //multer for file upload
 const storage = multer.diskStorage({
@@ -42,54 +43,45 @@ router.get("/:id", async (req, res) => {
 //the route post store as a json data with a user_id in store table
 router.post("/", upload.single("file"), async (req, res) => {
   const File = fs.readFileSync(req.file.path);
-  const dateForImage = await Date.now();
+  const uidForrStore = uuid();
   const user_id = req.body.user_id;
-  const store = {
-    user_id: user_id,
-    store_name: req.body.store_name,
-    description: "Unique handmade art.",
-    store_logo_url: "https://example.com/logo.jpg",
-  };
 
-  try {
-    await supabase.from("stores").insert([store]);
-
-    const { data: needToUpdate, error: needToUpdateError } = await supabase
-      .from("stores")
-      .select()
-      .eq("user_id", user_id)
-      .eq("store_logo_url", "https://example.com/logo.jpg");
-    if (needToUpdateError) {
-      return res.status(500).json({ error: needToUpdateError.message });
-    }
-    //ths is store_id
-    const store_id = await needToUpdate[0].id;
+    try {
     // this function waits until the product image is posted in the storage
     await supabase.storage
-      .from(`imageUpload/public/${store_id}`)
-      .upload(`public-uploaded-image-${dateForImage}.jpg`, File, {
+      .from(`imageUpload/public/${user_id}`)
+      .upload(`public-uploaded-image-${uidForrStore}.jpg`, File, {
         contentType: "image/jpeg",
       });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage
-      .from(`imageUpload/public/${store_id}`)
-      .getPublicUrl(`public-uploaded-image-${dateForImage}.jpg`);
-    await supabase
-      .from("stores")
-      .update([{ store_logo_url: data.publicUrl }])
-      .eq("id", store_id);
-    res.status(201).json({ message: "Store created successfully", store_id });
+      .from(`imageUpload/public/${user_id}`)
+      .getPublicUrl(`public-uploaded-image-${uidForrStore}.jpg`);
+   if(error || data.publicUrl===0){
+return res.status(500).send('not created try again');
+   }
+const store = {
+    user_id: user_id,
+    store_name: req.body.store_name,
+    description: req.body.store_description,
+    store_logo_url: data.publicUrl,
+  };
+
+ await supabase.from("stores").insert([store]);
+
+    res.status(201).send('created');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+
 });
 //delete store and products in it by store ID
 // , ID is passed through params
 router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
+  const user_id = req.params.id;
 
-  const folderPath = `public/${id}/`; // e.g., "public/2/"
+  const folderPath = `public/${user_id}/`; // e.g., "public/2/"
   const bucket = "imageUpload";
 
   try {
@@ -118,7 +110,7 @@ router.delete("/:id", async (req, res) => {
 
     try {
       // 4. Delete the store
-      await supabase.from("stores").delete({ count: 1 }).eq("id", id);
+      await supabase.from("stores").delete({ count: 1 }).eq("user_id", user_id);
       res.status(200).send("store deleted");
     } catch (error) {
       return res.status(500).send(error);
@@ -133,7 +125,7 @@ router.put("/:id", async (req, res) => {
   const store = {
     store_name: "mark’s Art Store",
     description: "Unique handmade art.",
-    store_logo_url: "https://example.com/logo.jpg",
+    store_logo_url: data,
   };
   const id = req.params.id;
 

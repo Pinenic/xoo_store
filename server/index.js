@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const supabase = createClient(
   process.env.DATABASE_URL,
-  process.env.PUBLIC_AnonKey
+  process.env.SERVICE_ROLE
 );
 module.exports = supabase;
 
