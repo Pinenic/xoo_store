@@ -46,7 +46,7 @@ export default function FilterBar({categories, brands, ratings, onFilterChange }
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 bg-white shadow rounded-lg">
       {/* Category Dropdown */}
-      <Dropdown label={filters.category || "Category"}>
+      <Dropdown label={filters.category || "Category"} >
         {categories.map((cat) => (
           <DropdownItem key={cat.toString()} onClick={() => handleChange("category", cat.toString())}>
             {cat.toString()}

@@ -9,7 +9,7 @@ import RadioButtonGroup from "../components/RadioButtonGroup";
 import FlowBiteHeader from "../components/FlowBiteHeader";
 import { useCartStore } from "../context/useCart";
 
-export default function ProductDetails({ user, profile }) {
+export default function ProductDetails({}) {
   const { productId } = useParams();
   const { product, loading } = useProducts(productId);
   const [inStock, setInStock] = useState(true);
@@ -29,7 +29,7 @@ export default function ProductDetails({ user, profile }) {
 
   return (
     <>
-    {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
+   
       {loading ? (
         <p>Loading</p>
       ) : (

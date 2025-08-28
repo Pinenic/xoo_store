@@ -67,7 +67,7 @@ export default function Cart({user}) {
               {" "}
               Proceed to checkout{" "}
             </Link>
-            <p  className="flex justify-center gap-3 items-center text-center px-3text-white w-full p-1 rounded-lg text-sm">or <Link to={"3"}
+            <p  className="flex justify-center gap-3 items-center text-center px-3text-white w-full p-1 rounded-lg text-sm">or <Link to={"/marketplace"}
            >Continue Shopping</Link></p>
           </div>
         </div>

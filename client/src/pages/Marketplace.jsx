@@ -8,7 +8,7 @@ import FilterBar from "../components/FilterBar";
 import Loader from "../components/Loader";
 import FlowBiteHeader from "../components/FlowBiteHeader";
 
-export default function Marketplace({user, profile}) {
+export default function Marketplace({}) {
   const { categories, brands, ratings } = useProductFilters();
   const {products, loading} = useProducts(300)
 
@@ -72,7 +72,7 @@ export default function Marketplace({user, profile}) {
 
   return (
     <>
-      {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
+      
       <div className="flex flex-col border-2">
         <h1 className="text-2xl p-2 font-medium text-gray-800">Marketplace | Featured Products</h1>
         <hr />

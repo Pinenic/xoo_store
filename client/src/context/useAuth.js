@@ -3,6 +3,35 @@ import { supabase } from '../supabase';
 import { useProfile } from './useProfile';
 import { useCartStore } from './useCart';
 
+// Helper: Ensure user folder is created before proceeding
+async function initUserFolderEnsureCreated(userId, retries = 3, delayMs = 500) {
+  const edgeFunctionUrl = `${import.meta.env.VITE_EDGE_FUNCTION_CUF}/functions/v1/init-user-folder`; // replace with your function name
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANNON_KEY}`, // optional if public
+        },
+        body: JSON.stringify({ user: { id: userId } }),
+      });
+
+      const result = await res.json();
+      if (res.ok) return result;
+
+      console.warn(`Edge Function attempt ${attempt} failed:`, result.error);
+    } catch (err) {
+      console.warn(`Edge Function attempt ${attempt} threw an error:`, err);
+    }
+
+    if (attempt < retries) await new Promise(res => setTimeout(res, delayMs));
+  }
+
+  throw new Error('Failed to initialize user folder after multiple attempts.');
+}
+
 export const useAuth = create((set, get) => ({
   user: null,
   profile: null,
@@ -12,61 +41,57 @@ export const useAuth = create((set, get) => ({
   _listener: null,
 
   // Initialize session and auth listener
-init: async () => {
-  // Prevent duplicate listener setup
-  if (get()._listener) return;
+  init: async () => {
+    if (get()._listener) return;
 
-  // Get the current session
-  const { data: { session } } = await supabase.auth.getSession();
-  set({ session, user: session?.user || null, loading: false });
+    const { data: { session } } = await supabase.auth.getSession();
+    set({ session, user: session?.user || null, loading: false });
 
-  // Set up the auth state change listener
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (_event, session) => {
-      const currentUser = get().user;
-      const newUser = session?.user || null;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        const currentUser = get().user;
+        const newUser = session?.user || null;
 
-      // Only update state if the user has actually changed
-      if (
-        (!currentUser && newUser) ||
-        (currentUser && !newUser) ||
-        (currentUser?.id !== newUser?.id)
-      ) {
-        set({ session, user: newUser, loading: false });
+        if ((!currentUser && newUser) || (currentUser && !newUser) || (currentUser?.id !== newUser?.id)) {
+          set({ session, user: newUser, loading: false });
 
-        // If there's a user, fetch profile and cart
-        if (newUser) {
-          const userId = newUser.id;
+          if (newUser) {
+            const userId = newUser.id;
 
-          // Fetch profile
-          useProfile.getState().fetchProfile(userId);
+            // Ensure storage folder exists
+            try {
+              await initUserFolderEnsureCreated(userId);
+            } catch (err) {
+              console.error('Error creating user folder in listener:', err.message);
+              set({ error: 'Failed to initialize user storage.' });
+            }
 
-          // Fetch or create cart
-          const { data: cartData, error: cartError } = await supabase
-            .from('carts')
-            .select('id')
-            .eq('user_id', userId)
-            .single();
+            // Fetch profile
+            useProfile.getState().fetchProfile(userId);
 
-          if (!cartError && cartData) {
-            const cartStore = useCartStore.getState();
-            cartStore.setCartId(cartData.id);
-            cartStore.fetchCart(userId);
+            // Fetch or create cart
+            const { data: cartData, error: cartError } = await supabase
+              .from('carts')
+              .select('id')
+              .eq('user_id', userId)
+              .single();
+
+            if (!cartError && cartData) {
+              const cartStore = useCartStore.getState();
+              cartStore.setCartId(cartData.id);
+              cartStore.fetchCart(userId);
+            }
           }
+        } else {
+          console.log("Auth event ignored: user unchanged");
         }
-      } else {
-        // If user is unchanged, do nothing
-        console.log("Auth event ignored: user unchanged");
       }
-    }
-  );
+    );
 
-  // Store the listener so we can clean it up later
-  set({ _listener: subscription });
-}
-,
+    set({ _listener: subscription });
+  },
 
-  // Signup with profile + cart fetch
+  // Signup with profile + cart fetch + storage folder
   signUp: async (email, password, firstname, lastname, avatarUrl) => {
     set({ loading: true, error: null });
 
@@ -76,7 +101,6 @@ init: async () => {
     if (!error && data.user) {
       const { user } = data;
 
-      // Insert into profiles table
       await supabase.from('users').insert({
         supabase_uid: user.id,
         email,
@@ -84,10 +108,19 @@ init: async () => {
         avatar_url: avatarUrl,
       });
 
+      // Ensure storage folder exists before proceeding
+      try {
+        await initUserFolderEnsureCreated(user.id);
+      } catch (err) {
+        console.error('Error creating user folder:', err.message);
+        set({ error: 'Failed to initialize user storage. Please try again.' });
+        return { error: err.message };
+      }
+
       // Fetch profile into Zustand
       useProfile.getState().fetchProfile(user.id);
 
-      // Fetch cart (trigger ensures cart exists)
+      // Fetch cart
       const { data: cartData, error: cartError } = await supabase
         .from('carts')
         .select('id')
@@ -107,11 +140,7 @@ init: async () => {
   signIn: async (email, password) => {
     set({ loading: true, error: null });
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       set({ loading: false, error: error.message });
       throw error;
@@ -119,7 +148,15 @@ init: async () => {
 
     const user = data.user;
 
-    // Fetch profile from profiles table
+    // Ensure storage folder exists
+    try {
+      await initUserFolderEnsureCreated(user.id);
+    } catch (err) {
+      console.error('Error creating user folder on sign-in:', err.message);
+      set({ error: 'Failed to initialize user storage.' });
+    }
+
+    // Fetch profile
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')

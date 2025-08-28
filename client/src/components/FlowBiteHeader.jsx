@@ -24,8 +24,8 @@ export default function FlowBiteHeader({profile}) {
   return (<>
   <Navbar fluid className="sticky top-0 z-50 bg-white">
     <NavbarBrand>
-        <img src="" alt="" />
-        <span className="self-center whitespace-nowrap text-xl font-semibold text-black">Xoo Store</span>
+        <img src="#" alt="" />
+        <Link to={"/"}><span className="self-center whitespace-nowrap text-xl font-semibold text-black">Xoo Store</span></Link>
     </NavbarBrand>
     {profile ? (
       <>
@@ -74,7 +74,7 @@ export default function FlowBiteHeader({profile}) {
         <NavbarLink href="/marketplace">
             Marketplace
         </NavbarLink>
-        <NavbarLink href="#">
+        <NavbarLink href="/features">
             Features
         </NavbarLink>
         <NavbarLink href="#">

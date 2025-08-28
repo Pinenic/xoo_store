@@ -12,6 +12,9 @@ import ProductDetails from './ProductDetails';
 import Marketplace from './Marketplace';
 import Loader from '../components/Loader';
 import { useCartStore } from '../context/useCart';
+import Features from './Features';
+import CreateStorePage from './CreateStorePage';
+import FlowBiteHeader from '../components/FlowBiteHeader';
 
 export default function App() {
   const { init, loading, user } = useAuth()
@@ -36,11 +39,14 @@ export default function App() {
     <div>
       <ThemeInit />
       <Router>
+        {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
       <Routes>
         <Route path="/" element={<Landing user={user} profile={profile}  />} />
         <Route path='/products/:productId' element={<ProductDetails  user={user} profile={profile}/>}></Route>
         <Route path='/marketplace' element={<Marketplace  user={user} profile={profile}/>}></Route>
-        <Route path='spinner' element={<Loader />}></Route>
+        <Route path='/features' element={<Features user={user} profile={profile}  />}>
+          
+        </Route>
 
         {/* Auth pages */}
         <Route path="/auth" element={<AuthPage />} />
@@ -63,6 +69,11 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path='/features/start-selling' element={
+            <ProtectedRoute>
+              <CreateStorePage />
+            </ProtectedRoute>
+          } />
       </Routes>
     </Router>
     </div>

@@ -4,7 +4,7 @@ import Hero from "../components/Hero";
 import PromotionBanner from "../components/PromotionBanner";
 import DealsCarousel from "../components/DealsCarousel";
 
-export default function Landing({ user, profile }) {
+export default function Landing({}) {
   const categories = [
     {
       label: "Beauty",
@@ -33,7 +33,7 @@ export default function Landing({ user, profile }) {
   ];
   return (
     <>
-      {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
+      
       <Hero />
       <div className="p-4">
         <h1 className='px-8 py-4 text-2xl font-semibold'>Browse by Category</h1>
