@@ -59,6 +59,21 @@ router.get("/:id", async (req, res) => {
     return res.status(500).send(error);
   }
 });
+//this route gets the latest product
+// you can pass a limit to the number of products returned using the query parameter `limit`
+router.get("/latest/first", async (req, res) => {
+  const latest = req.query.limit;
+  try {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(latest);
+    res.status(200).send(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 //this route post a product in the product table,
 //at first it get the product as json data with a store ID then it post to the product table
 router.post("/", upload.any(), async (req, res) => {
@@ -88,13 +103,17 @@ router.post("/", upload.any(), async (req, res) => {
         //this is a product json with a ImageUrl and store_id
         const product = {
           store_id: req.body.store_id,
-          name: req.body.product_name,
-          description: req.body.product_description,
-          price: req.body.product_price,
-          stock: req.body.product_stock,
-          details: { size: req.body.product_size, color:req.body.product_color },
-          image_url: ImageUrl,
-          image_array: [],
+          title: req.body.name,
+          description: req.body.description,
+          price: req.body.price,
+          stock: req.body.stock,
+          details: { size: req.body.size, color:req.body.color },
+          thumbnail: ImageUrl,
+          images: [],
+          category:req.body.category,
+          brand:req.body.brand,
+          shipping_imformation:req.body.shipping_imformation,
+          tags:req.body.tags,
         };
 
         //this function insert the product json data into the products table
@@ -148,7 +167,7 @@ router.post("/", upload.any(), async (req, res) => {
 });
 //this route it just delete product by ID,
 // it get the ID through the params
-// it get the store ID from the request body as req.body.store_id
+// it get the user ID from the request body as req.bodyuser_id
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
   const user_id =  req.body.user_id;
@@ -311,21 +330,6 @@ try {
   } catch (error) {
     return res.status(500).send(error);
   }
-  }
-});
-//this route gets the latest product
-// you can pass a limit to the number of products returned using the query parameter `limit`
-router.get("/latest/first", async (req, res) => {
-  const latest = req.query.limit;
-  try {
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(latest);
-    res.status(200).send(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 
