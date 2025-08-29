@@ -43,21 +43,21 @@ router.get("/:id", async (req, res) => {
 //the route post store as a json data with a user_id in store table
 router.post("/", upload.single("file"), async (req, res) => {
   const File = fs.readFileSync(req.file.path);
-  const uidForrStore = uuid();
+  const uidForStore = uuid();
   const user_id = req.body.user_id;
 
     try {
     // this function waits until the product image is posted in the storage
     await supabase.storage
       .from(`imageUpload/public/${user_id}`)
-      .upload(`public-uploaded-image-${uidForrStore}.jpg`, File, {
+      .upload(`public-uploaded-image-${uidForStore}.jpg`, File, {
         contentType: "image/jpeg",
       });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage
       .from(`imageUpload/public/${user_id}`)
-      .getPublicUrl(`public-uploaded-image-${uidForrStore}.jpg`);
+      .getPublicUrl(`public-uploaded-image-${uidForStore}.jpg`);
    if(error || data.publicUrl===0){
 return res.status(500).send('not created try again');
    }
@@ -79,18 +79,20 @@ const store = {
 //delete store and products in it by store ID
 // , ID is passed through params
 router.delete("/:id", async (req, res) => {
-  const user_id = req.params.id;
-
-  const folderPath = `public/${user_id}/`; // e.g., "public/2/"
-  const bucket = "imageUpload";
+  const store_id = req.params.id;
 
   try {
+
+  const { data } = await supabase.from("stores").select().eq("id", store_id);
+
+  const folderPath = `public/${data[0].user_id}/`; // e.g., "public/2/"
+  const bucket = "imageUpload";
     //  List all files in the folder
     const { data: files, error: listError } = await supabase.storage
       .from(bucket)
       .list(folderPath);
 
-    if (listError) return res.status(500).json({ error: listError.message });
+    if (listError){ return res.status(500).json({ error: listError.message });}
 
     if (!files || files.length === 0) {
       await supabase.from("stores").delete({ count: 1 }).eq("id", id);
@@ -105,12 +107,12 @@ router.delete("/:id", async (req, res) => {
       .from(bucket)
       .remove(objectsToDelete);
 
-    if (deleteError)
-      return res.status(500).json({ error: deleteError.message });
+    if (deleteError){return res.status(500).json({ error: deleteError.message });}
+      
 
     try {
       // 4. Delete the store
-      await supabase.from("stores").delete({ count: 1 }).eq("user_id", user_id);
+      await supabase.from("stores").delete({ count: 1 }).eq("id", store_id);
       res.status(200).send("store deleted");
     } catch (error) {
       return res.status(500).send(error);
@@ -121,13 +123,57 @@ router.delete("/:id", async (req, res) => {
 });
 //update  store by ID
 // , ID is passed through params
-router.put("/:id", async (req, res) => {
-  const store = {
-    store_name: "mark’s Art Store",
-    description: "Unique handmade art.",
-    store_logo_url: data,
-  };
+router.put("/:id",upload.single("file"),async (req, res) => {
+  
+    const bucket = "imageUpload";
   const id = req.params.id;
+  if(req.file){
+ 
+  const { data } = await supabase.from("stores").select().eq("id", id);
+  const File = fs.readFileSync(req.file.path);
+  const uidForStore = uuid();
+  const folderPath = `public/${data[0].user_id}}/`;
+  const image_url= data[0].store_logo_url.split("/");
+  
+   //  Delete the prevous logo
+   await supabase.storage
+      .from(bucket)
+      .remove(`${folderPath}${image_url[10]}`);
+ 
+      //this function waits until it finish upload a store logo
+      await supabase.storage
+      .from(`imageUpload/public/${data[0].user_id}`)
+      .upload(`public-uploaded-image-${uidForStore}.jpg`, File, {
+        contentType: "image/jpeg",
+      });
+
+    //this function wait until it gets the url data and asign it as ImageUrl and update the store
+    const { data:UrlData, error:UrlError } = await supabase.storage
+      .from(`imageUpload/public/${data[0].user_id}`)
+      .getPublicUrl(`public-uploaded-image-${uidForStore}.jpg`);
+      if(UrlError || UrlData.publicUrl===0){
+return res.status(500).send('not created try again');
+   }
+
+    const store = {
+    store_name: req.body.store_name,
+    description:req.body.description,
+    store_logo_url: UrlData.publicUrl,
+  };
+
+
+    try {
+    await supabase.from("stores").update([store]).eq("id", id);
+    res.status(200).send("updated");
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+  }
+
+   const store = {
+    store_name: req.body.store_name,
+    description: req.body.description,
+  };
 
   try {
     await supabase.from("stores").update([store]).eq("id", id);

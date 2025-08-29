@@ -43,19 +43,25 @@ router.delete("/:id", async (req, res) => {
 });
 //update  user by ID,
 // the ID is passed through the params
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.single("file"),async (req, res) => {b
   const id = req.params.id;
   const uid=uuid();
  
-if(req.body.profile){
- const File = fs.readFileSync(file.path);
+if(req.file){
+ const File = fs.readFileSync(req.file.path);
+         //  Delete the prevous profile
+ const { data:userData } = await supabase.from("users").select().eq("id", id);
+ const image_url= userData[0].thubnail.split("/");
+   await supabase.storage
+      .from("imageUpload")
+      .remove(`public/${id}/${image_url[10]}`);
          // this function waits until the user profile  is posted in the storage
         await supabase.storage
-          .from(`imageUpload/public/${req.body.user_id}`)
+          .from(`imageUpload/public/${id}`)
           .upload(`public-uploaded-image-${uid}.jpg`, File, {contentType: "image/jpeg",});
                       //this function wait until it gets the url data and asign it as ImageUrl
         const { data, error } = await supabase.storage
-          .from(`imageUpload/public/${req.body.user_id}`)
+          .from(`imageUpload/public/${id}`)
           .getPublicUrl(`public-uploaded-image-${uid}.jpg`);
         if (error) {
           return res.status(500).json({ error: error.message });
@@ -64,7 +70,7 @@ if(req.body.profile){
         const user = {
     name: req.body.user_name,
     email: "mark@example.com",
-    profile_picture_url: ImageUrl,
+    thubnail: ImageUrl,
   };
     try {
     await supabase.from("users").update([user]).eq("id", id);
