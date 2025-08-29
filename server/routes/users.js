@@ -1,7 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const {v4:uuid}=require('uuid');
+
+//multer for file upload
+const storage = multer.diskStorage({
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 //get all users in the users table
 router.get("/", async (req, res) => {
