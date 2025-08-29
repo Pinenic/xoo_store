@@ -84,6 +84,7 @@ router.post("/", upload.any(), async (req, res) => {
     for (const file of req.files) {
       if (file.fieldname === "file") {
         const File = fs.readFileSync(file.path);
+        
         // this function waits until the product image is posted in the storage
         await supabase.storage
           .from(`imageUpload/public/${user_id}`)
@@ -95,6 +96,7 @@ router.post("/", upload.any(), async (req, res) => {
         const { data, error } = await supabase.storage
           .from(`imageUpload/public/${user_id}`)
           .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
+
         if (error) {
           return res.status(500).json({ error: error.message });
         }
@@ -112,54 +114,56 @@ router.post("/", upload.any(), async (req, res) => {
           images: [],
           category:req.body.category,
           brand:req.body.brand,
-          shipping_imformation:req.body.shipping_imformation,
-          tags:req.body.tags,
+          shipping_information:req.body.shipping_imformation,
+          tags:null,
         };
 
-        //this function insert the product json data into the products table
+        // this function insert the product json data into the products table
         try {
-          const { data } = await supabase
+          const { data:dataForID } = await supabase
             .from("products")
             .insert([product])
             .select();
-          array.push(data[0].id);
+          array.push(dataForID[0].id);
+          console.log(dataForID[0].id);
         } catch (error) {
-          res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message});
+          console.log(error);
         }
       }
 
-      if (await array.length > 0) {
-        if (file.fieldname === "files") {
-          const uidFoimages =uuid()
-          const File = fs.readFileSync(file.path);
-          await supabase.storage
-            .from(`imageUpload/public/${user_id}`)
-            .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
-              contentType: "image/jpeg",
-            });
+      // if (await array.length > 0) {
+      //   if (file.fieldname === "files") {
+      //     const uidFoimages =uuid()
+      //     const File = fs.readFileSync(file.path);
+      //     await supabase.storage
+      //       .from(`imageUpload/public/${user_id}`)
+      //       .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
+      //         contentType: "image/jpeg",
+      //       });
 
-          //this function wait until it gets the url data and asign it as ImageUrl
-          const { data: dataForUrl, error: errorForUrl } =
-            await supabase.storage
-              .from(`imageUpload/public/${user_id}`)
-              .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
+      //     //this function wait until it gets the url data and asign it as ImageUrl
+      //     const { data: dataForUrl, error: errorForUrl } =
+      //       await supabase.storage
+      //         .from(`imageUpload/public/${user_id}`)
+      //         .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
 
-          const { data, error } = await supabase
-            .from("products")
-            .select("image_array")
-            .eq("id", array[0])
-            .single();
+      //     const { data, error } = await supabase
+      //       .from("products")
+      //       .select("image_array")
+      //       .eq("id", array[0])
+      //       .single();
 
-          let obj = data.image_array;
-          obj.push(dataForUrl);
+      //     let obj = data.image_array;
+      //     obj.push(dataForUrl);
 
-          await supabase
-            .from("products")
-            .update({ image_array: obj })
-            .eq("id", array[0]);
-         res.status(200).send("product created");
-        }
-      }
+      //     await supabase
+      //       .from("products")
+      //       .update({ image_array: obj })
+      //       .eq("id", array[0]);
+      //    res.status(200).send("product created");
+      //   }
+      // }
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
