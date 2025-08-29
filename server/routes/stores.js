@@ -49,14 +49,14 @@ router.post("/", upload.single("file"), async (req, res) => {
     try {
     // this function waits until the product image is posted in the storage
     await supabase.storage
-      .from(`imageUpload/public/${user_id}`)
+      .from(`user_uploads/${user_id}`)
       .upload(`public-uploaded-image-${uidForStore}.jpg`, File, {
         contentType: "image/jpeg",
       });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage
-      .from(`imageUpload/public/${user_id}`)
+      .from(`user_uploads/${user_id}`)
       .getPublicUrl(`public-uploaded-image-${uidForStore}.jpg`);
    if(error || data.publicUrl===0){
 return res.status(500).send('not created try again');
@@ -66,6 +66,10 @@ const store = {
     store_name: req.body.store_name,
     description: req.body.store_description,
     store_logo_url: data.publicUrl,
+    category:req.body.category,
+    payment_method:req.body.payment_method,
+    account_number:req.body.account_number,
+    plan:req.body.plan,
   };
 
  await supabase.from("stores").insert([store]);
@@ -157,8 +161,12 @@ return res.status(500).send('not created try again');
 
     const store = {
     store_name: req.body.store_name,
-    description:req.body.description,
+    description: req.body.store_description,
     store_logo_url: UrlData.publicUrl,
+    category:req.body.category,
+    payment_method:req.body.payment_method,
+    account_number:req.body.account_number,
+    plan:req.body.plan,
   };
 
 
