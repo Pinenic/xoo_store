@@ -63,12 +63,12 @@ return res.status(500).send('not created try again');
    }
 const store = {
     user_id: user_id,
-    store_name: req.body.store_name,
-    description: req.body.store_description,
-    store_logo_url: data.publicUrl,
+    store_name: req.body.storeName,
+    description: req.body.description,
+    store_logo_url: data.publicUrl || "http://error",
     category:req.body.category,
-    payment_method:req.body.payment_method,
-    account_number:req.body.account_number,
+    payment_method:req.body.paymentMethod,
+    account_number:req.body.accountNumber,
     plan:req.body.plan,
   };
 
@@ -80,38 +80,48 @@ const store = {
   }
 
 });
+
+
+
+
+
+
+
 //delete store and products in it by store ID
 // , ID is passed through params
 router.delete("/:id", async (req, res) => {
   const store_id = req.params.id;
 
+
   try {
 
   const { data } = await supabase.from("stores").select().eq("id", store_id);
 
-  const folderPath = `public/${data[0].user_id}/`; // e.g., "public/2/"
-  const bucket = "imageUpload";
+  const folderPath = `${data[0].user_id}/`; // e.g., "public/2/"
+  const bucket = "user_uploads";
     //  List all files in the folder
     const { data: files, error: listError } = await supabase.storage
       .from(bucket)
       .list(folderPath);
+      console.log(files);
+      
 
-    if (listError){ return res.status(500).json({ error: listError.message });}
+    // if (listError){ return res.status(500).json({ error: listError.message });}
 
-    if (!files || files.length === 0) {
-      await supabase.from("stores").delete({ count: 1 }).eq("id", id);
-      return res.status(200).send("store deleted");
-    }
+    // if (!files || files.length === 0) {
+    //   await supabase.from("stores").delete({ count: 1 }).eq("id", id);
+    //   return res.status(200).send("store deleted");
+    // }
 
-    //  Build array of file paths to delete
-    const objectsToDelete = files.map((file) => `${folderPath}${file.name}`);
+    // //  Build array of file paths to delete
+    // const objectsToDelete = files.map((file) => `${folderPath}${file.name}`);
 
-    //  Delete all files
-    const { data: deleted, error: deleteError } = await supabase.storage
-      .from(bucket)
-      .remove(objectsToDelete);
+    // //  Delete all files
+    // const { data: deleted, error: deleteError } = await supabase.storage
+    //   .from(bucket)
+    //   .remove(objectsToDelete);
 
-    if (deleteError){return res.status(500).json({ error: deleteError.message });}
+    // if (deleteError){return res.status(500).json({ error: deleteError.message });}
       
 
     try {
@@ -129,14 +139,14 @@ router.delete("/:id", async (req, res) => {
 // , ID is passed through params
 router.put("/:id",upload.single("file"),async (req, res) => {
   
-    const bucket = "imageUpload";
+    const bucket = "user_uploads";
   const id = req.params.id;
   if(req.file){
  
   const { data } = await supabase.from("stores").select().eq("id", id);
   const File = fs.readFileSync(req.file.path);
   const uidForStore = uuid();
-  const folderPath = `public/${data[0].user_id}}/`;
+  const folderPath = `${data[0].user_id}}/`;
   const image_url= data[0].store_logo_url.split("/");
   
    //  Delete the prevous logo
@@ -146,14 +156,14 @@ router.put("/:id",upload.single("file"),async (req, res) => {
  
       //this function waits until it finish upload a store logo
       await supabase.storage
-      .from(`imageUpload/public/${data[0].user_id}`)
+      .from(`user_uploads/${data[0].user_id}`)
       .upload(`public-uploaded-image-${uidForStore}.jpg`, File, {
         contentType: "image/jpeg",
       });
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data:UrlData, error:UrlError } = await supabase.storage
-      .from(`imageUpload/public/${data[0].user_id}`)
+      .from(`user_uploads/${data[0].user_id}`)
       .getPublicUrl(`public-uploaded-image-${uidForStore}.jpg`);
       if(UrlError || UrlData.publicUrl===0){
 return res.status(500).send('not created try again');

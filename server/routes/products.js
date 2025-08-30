@@ -230,7 +230,7 @@ router.delete("/:id", async (req, res) => {
 });
 // route update the product by ID,
 // the ID is passed through the params
-router.put("/id", upload.any(), async (req, res) => {
+router.put("/:id", upload.any(), async (req, res) => {
   let array = [];
   const id = req.params.id;
   if(req.files){
