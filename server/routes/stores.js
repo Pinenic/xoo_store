@@ -48,11 +48,15 @@ router.post("/", upload.single("file"), async (req, res) => {
 
     try {
     // this function waits until the product image is posted in the storage
-    await supabase.storage
+    const  {data:uploadedImage,error:uploadedImageError}=await supabase.storage
       .from(`user_uploads/${user_id}`)
       .upload(`public-uploaded-image-${uidForStore}.jpg`, File, {
         contentType: "image/jpeg",
       });
+
+      if(uploadedImageError){
+        return res.status(500).json({data:"not created try again",massege:uploadedImageError.message})
+      }
 
     //this function wait until it gets the url data and asign it as ImageUrl and update the store
     const { data, error } = await supabase.storage
@@ -65,7 +69,7 @@ const store = {
     user_id: user_id,
     store_name: req.body.storeName,
     description: req.body.description,
-    store_logo_url: data.publicUrl || "http://error",
+    store_logo_url: data.publicUrl,
     category:req.body.category,
     payment_method:req.body.paymentMethod,
     account_number:req.body.accountNumber,
