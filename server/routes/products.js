@@ -74,31 +74,36 @@ router.get("/latest/first", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 //this route post a product in the product table,
 //at first it get the product as json data with a store ID then it post to the product table
 router.post("/", upload.any(), async (req, res) => {
   let array = [];
   try {
     const uidFoimage = uuid();
-    const user_id = req.body.user_id;
+    const { data } = await supabase.from("stores").select('*').eq("id", req.body.store_id);
+
+    const user_id = data[0].user_id;
     for (const file of req.files) {
       if (file.fieldname === "file") {
         const File = fs.readFileSync(file.path);
         
         // this function waits until the product image is posted in the storage
-        await supabase.storage
-          .from(`imageUpload/public/${user_id}`)
+      const   {data:imageUploaded,error:imageUploadedError}= await supabase.storage
+          .from(`user_uploads/${user_id}/products`)
           .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
             contentType: "image/jpeg",
           });
-
+if(imageUploadedError){ return res.status(500).json({
+  data:"error try again",error:imageUploadedError.message
+})}
         //this function wait until it gets the url data and asign it as ImageUrl
         const { data, error } = await supabase.storage
-          .from(`imageUpload/public/${user_id}`)
+          .from(`user_uploads/${user_id}/products`)
           .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
 
         if (error) {
-          return res.status(500).json({ error: error.message });
+          return res.status(500).json({data:"error try again", error: error.message });
         }
         const ImageUrl = data.publicUrl;
 
@@ -125,68 +130,81 @@ router.post("/", upload.any(), async (req, res) => {
             .insert([product])
             .select();
           array.push(dataForID[0].id);
-          console.log(dataForID[0].id);
         } catch (error) {
           res.status(500).json({ error: error.message});
           console.log(error);
         }
       }
 
-      // if (await array.length > 0) {
-      //   if (file.fieldname === "files") {
-      //     const uidFoimages =uuid()
-      //     const File = fs.readFileSync(file.path);
-      //     await supabase.storage
-      //       .from(`imageUpload/public/${user_id}`)
-      //       .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
-      //         contentType: "image/jpeg",
-      //       });
+      if (await array.length > 0) {
+        if (file.fieldname === "files") {
+          const uidFoimages =uuid()
+          const File = fs.readFileSync(file.path);
+          await supabase.storage
+            .from(`user_uploads/${user_id}/products`)
+            .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
+              contentType: "image/jpeg",
+            });
 
-      //     //this function wait until it gets the url data and asign it as ImageUrl
-      //     const { data: dataForUrl, error: errorForUrl } =
-      //       await supabase.storage
-      //         .from(`imageUpload/public/${user_id}`)
-      //         .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
+          //this function wait until it gets the url data and asign it as ImageUrl
+          const { data: dataForUrl, error: errorForUrl } =
+            await supabase.storage
+              .from(`user_uploads/${user_id}/products`)
+              .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
 
-      //     const { data, error } = await supabase
-      //       .from("products")
-      //       .select("image_array")
-      //       .eq("id", array[0])
-      //       .single();
+          const { data, error } = await supabase
+            .from("products")
+            .select("images")
+            .eq("id", array[0])
+            .single();
 
-      //     let obj = data.image_array;
-      //     obj.push(dataForUrl);
+          let obj = data.images;
+          obj.push(dataForUrl.publicUrl);
 
-      //     await supabase
-      //       .from("products")
-      //       .update({ image_array: obj })
-      //       .eq("id", array[0]);
-      //    res.status(200).send("product created");
-      //   }
-      // }
+          await supabase
+            .from("products")
+            .update({"images":obj })
+            .eq("id", array[0]);
+        
+        }
+        
+      }
     }
+     res.status(200).send("product created");
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 });
+
 //this route it just delete product by ID,
 // it get the ID through the params
-// it get the user ID from the request body as req.bodyuser_id
 router.delete("/:id", async (req, res) => {
   const id = req.params.id;
-  const user_id =  req.body.user_id;
-  const folderPath = `public/${user_id}/`;
-  try {
-    const { data } = await supabase.from("products").select().eq("id", id);
-    const image_url = data[0].image_url.split("/");
+  const { data } = await supabase.from("products").select().eq("id", id);
+  const { data:storeData,error:storeDataError } = await supabase.from("stores").select().eq("id", data[0].store_id);
+  const user_id =storeData[0].user_id;
+  const folderPath = `${user_id}/products/`;
 
+  try {
+    const image_url = data[0].thumbnail.split("/");
+    
     //this function delete the image from the storage
     await supabase.storage
-      .from(`imageUpload`)
+      .from(`user_uploads`)
       .remove(`${folderPath}${image_url[10]}`);
 
     //this function delete the product from the database
     await supabase.from("products").delete({ count: 1 }).eq("id", id);
+    if(data[0].images.length>-1){
+
+for (const file of data[0].images) {
+  const images_url = file.split("/");
+  await supabase.storage
+      .from(`user_uploads`)
+      .remove(`${folderPath}${images_url[10]}`);
+}
+
+    }
     res.status(200).send("product deleted");
   } catch (error) {
     return res.status(500).json({ error });
@@ -197,143 +215,168 @@ router.delete("/:id", async (req, res) => {
   //at first it gets the list of all folder images in the storage then it checks if the user exists
   //this is used to clean up the storage if developer deletes a store in the database
 
-  try {
-    const data = await supabase.storage.from("imageUpload").list("public");
-    const list = data.data.map((files) => `${files.name}`);
-    list.forEach(async (list) => {
-      try {
-        const { data: deleteThis, error: deleteThisError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", list);
+  // try {
+  //   const data = await supabase.storage.from("imageUpload").list("public");
+  //   const list = data.data.map((files) => `${files.name}`);
+  //   list.forEach(async (list) => {
+  //     try {
+  //       const { data: deleteThis, error: deleteThisError } = await supabase
+  //         .from("users")
+  //         .select("*")
+  //         .eq("id", list);
 
-        if (deleteThis === null || deleteThis.length === 0) {
-          const { data, error } = await supabase.storage
-            .from("imageUpload")
-            .list(`public/${list}`);
+  //       if (deleteThis === null || deleteThis.length === 0) {
+  //         const { data, error } = await supabase.storage
+  //           .from("imageUpload")
+  //           .list(`public/${list}`);
 
-          const objectsToDelete = data.map(
-            (file) => `public/${list}/${file.name}`
-          );
-          await supabase.storage.from("imageUpload").remove(objectsToDelete);
-        }
-        if (deleteThisError) {
-          return res.status(500).json({ error: "refresh again" });
-        }
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  //         const objectsToDelete = data.map(
+  //           (file) => `public/${list}/${file.name}`
+  //         );
+  //         await supabase.storage.from("imageUpload").remove(objectsToDelete);
+  //       }
+  //       if (deleteThisError) {
+  //         return res.status(500).json({ error: "refresh again" });
+  //       }
+  //     } catch (error) {
+  //       res.status(500).json({ error: error.message });
+  //     }
+  //   });
+  // } catch (error) {
+  //   res.status(500).json({ error: error.message });
+  // }
 });
+
+
+
+
+
+
+
 // route update the product by ID,
 // the ID is passed through the params
 router.put("/:id", upload.any(), async (req, res) => {
   let array = [];
-  const id = req.params.id;
-  if(req.files){
-try {
+  try {
     const uidFoimage = uuid();
-    const user_id = req.body.user_id;
-    for (const file of req.files) {
-      if (file.fieldname === "file") {
-        const File = fs.readFileSync(file.path);
-        // this function waits until the product image is posted in the storage
-        await supabase.storage
-          .from(`imageUpload/public/${user_id}`)
-          .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
-            contentType: "image/jpeg",
-          });
+    const { data } = await supabase.from("products").select('*').eq("id", req.params.id);
+    const { data:storeData,error:storeDataError } = await supabase.from("stores").select('*').eq("id",data[0].store_id);
+    const user_id = storeData[0].user_id;
 
-        //this function wait until it gets the url data and asign it as ImageUrl
-        const { data, error } = await supabase.storage
-          .from(`imageUpload/public/${user_id}`)
-          .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
-        if (error) {
-          return res.status(500).json({ error: error.message });
-        }
-        const ImageUrl = data.publicUrl;
+    if(req.files.length>=1){
+//     for (const file of req.files) {
+//       if (file.fieldname === "file") {
+//         const File = fs.readFileSync(file.path);
+        
+//         // this function waits until the product image is posted in the storage
+//       const   {data:imageUploaded,error:imageUploadedError}= await supabase.storage
+//           .from(`user_uploads/${user_id}/products`)
+//           .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
+//             contentType: "image/jpeg",
+//           });
+// if(imageUploadedError){ return res.status(500).json({
+//   data:"error try again",error:imageUploadedError.message
+// })}
+//         //this function wait until it gets the url data and asign it as ImageUrl
+//         const { data, error } = await supabase.storage
+//           .from(`user_uploads/${user_id}/products`)
+//           .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
 
-        //this is a product json with a ImageUrl and store_id
+//         if (error) {
+//           return res.status(500).json({data:"error try again", error: error.message });
+//         }
+//         const ImageUrl = data.publicUrl;
+
+//         //this is a product json with a ImageUrl and store_id
+//         const product = {
+//           store_id: req.body.store_id,
+//           title: req.body.name,
+//           description: req.body.description,
+//           price: req.body.price,
+//           stock: req.body.stock,
+//           details: { size: req.body.size, color:req.body.color },
+//           thumbnail: ImageUrl,
+//           images: [],
+//           category:req.body.category,
+//           brand:req.body.brand,
+//           shipping_information:req.body.shipping_imformation,
+//           tags:null,
+//         };
+
+//         // this function insert the product json data into the products table
+//         try {
+//           const { data:dataForID } = await supabase
+//             .from("products")
+//             .insert([product])
+//             .select();
+//           array.push(dataForID[0].id);
+//         } catch (error) {
+//           res.status(500).json({ error: error.message});
+//           console.log(error);
+//         }
+//       }
+
+//       if (await array.length > 0) {
+//         if (file.fieldname === "files") {
+//           const uidFoimages =uuid()
+//           const File = fs.readFileSync(file.path);
+//           await supabase.storage
+//             .from(`user_uploads/${user_id}/products`)
+//             .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
+//               contentType: "image/jpeg",
+//             });
+
+//           //this function wait until it gets the url data and asign it as ImageUrl
+//           const { data: dataForUrl, error: errorForUrl } =
+//             await supabase.storage
+//               .from(`user_uploads/${user_id}/products`)
+//               .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
+
+//           const { data, error } = await supabase
+//             .from("products")
+//             .select("images")
+//             .eq("id", array[0])
+//             .single();
+
+//           let obj = data.images;
+//           obj.push(dataForUrl.publicUrl);
+
+//           await supabase
+//             .from("products")
+//             .update({"images":obj })
+//             .eq("id", array[0]);
+        
+//         }
+        
+//       }
+//     }
+return res.status(200).send("product updated");
+}
+
         const product = {
           store_id: req.body.store_id,
-          name: req.body.product_name,
-          description: req.body.product_description,
-          price: req.body.product_price,
-          stock: req.body.product_stock,
-          details: { size: req.body.product_size, color:req.body.product_color },
-          image_url: ImageUrl,
-          image_array: [],
+          title: req.body.name,
+          description: req.body.description,
+          price: req.body.price,
+          stock: req.body.stock,
+          details: { size: req.body.size, color:req.body.color },
+          category:req.body.category,
+          brand:req.body.brand,
+          shipping_information:req.body.shipping_imformation,
+          tags:null,
         };
-
-        //this function insert the product json data into the products table
-        try {
-          const { data } = await supabase
+  try {
+          const { data:dataForID } = await supabase
             .from("products")
-            .update([product])
-            .eq('id',id)
-            .select();
-          array.push(data[0].id);
+            .update(product)
+            .eq(req.params.id);
         } catch (error) {
-          res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message});
+          console.log(error);
         }
-      }
-
-      if (await array.length > 0) {
-        if (file.fieldname === "files") {
-          const uidFoimages =uuid()
-          const File = fs.readFileSync(file.path);
-          await supabase.storage
-            .from(`imageUpload/public/${user_id}`)
-            .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
-              contentType: "image/jpeg",
-            });
-
-          //this function wait until it gets the url data and asign it as ImageUrl
-          const { data: dataForUrl, error: errorForUrl } =
-            await supabase.storage
-              .from(`imageUpload/public/${user_id}`)
-              .getPublicUrl(`public-uploaded-image-${uidFoimages}.jpg`);
-
-          const { data, error } = await supabase
-            .from("products")
-            .select("image_array")
-            .eq("id", array[0])
-            .single();
-
-          let obj = data.image_array;
-          obj.push(dataForUrl);
-
-          await supabase
-            .from("products")
-            .update({ image_array: obj })
-            .eq("id", array[0]);
-         res.status(200).send("product created");
-        }
-      }
-    }
+     res.status(200).send("product updated");
   } catch (error) {
     return res.status(500).json({ error: error.message });
-  }
-  }
-  else{
-      
-  const product = {
-    name: req.body.product_name,
-    description: req.body.product_description,
-    price: req.body.product_price,
-    stock: req.body.product_stock,
-    details: { size: req.body.product_size, color: req.body.product_color },
-  };
-
-  try {
-    await supabase.from("products").update([product]).eq("id", id);
-    res.status(200).send("updated");
-  } catch (error) {
-    return res.status(500).send(error);
-  }
   }
 });
 

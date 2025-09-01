@@ -149,7 +149,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-
 //update  store by ID
 // , ID is passed through params
 router.put("/:id", upload.single("file"), async (req, res) => {
