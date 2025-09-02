@@ -15,7 +15,7 @@ export default function FilterBar({categories, brands, ratings, onFilterChange }
 
   const priceRanges = ["Under $50", "$50 - $100", "$100 - $500", "Above $500"];
   const sortOptions = [
-    { key: "newest", label: "Newest" },
+    { key: "newest", label: "New" },
     { key: "price_low_high", label: "Price ↑" },
     { key: "price_high_low", label: "Price ↓" },
     { key: "rating_high_low", label: "Rating" },
@@ -46,7 +46,7 @@ export default function FilterBar({categories, brands, ratings, onFilterChange }
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 bg-white shadow rounded-lg">
       {/* Category Dropdown */}
-      <Dropdown label={filters.category || "Category"}>
+      <Dropdown label={filters.category || "Category"} >
         {categories.map((cat) => (
           <DropdownItem key={cat.toString()} onClick={() => handleChange("category", cat.toString())}>
             {cat.toString()}
@@ -83,7 +83,7 @@ export default function FilterBar({categories, brands, ratings, onFilterChange }
 
       {/* Sort Toggle Buttons */}
       <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Sort by:</span>
+        <span className="font-medium text-xs">Sort by:</span>
         <div className="flex gap-2">
           {sortOptions.map(({ key, label }) => (
             <Button

@@ -3,11 +3,12 @@ import React, { useMemo, useState } from "react";
 import useProductFilters from "../hooks/useProductFilters";
 import useProducts from "../hooks/useProducts";
 
-import { GridProductCard } from "../components/ProductCards";
-import FilterBar from "../components/FilterBar";
-import Loader from "../components/Loader";
+import { GridProductCard } from "../components/products/ProductCards";
+import FilterBar from "../components/marketplace/FilterBar";
+import Loader from "../components/global/Loader";
+import FlowBiteHeader from "../components/global/FlowBiteHeader";
 
-export default function Marketplace(props) {
+export default function Marketplace({}) {
   const { categories, brands, ratings } = useProductFilters();
   const {products, loading} = useProducts(300)
 
@@ -71,8 +72,9 @@ export default function Marketplace(props) {
 
   return (
     <>
+      
       <div className="flex flex-col border-2">
-        <h1>Marketplace | Featured Products</h1>
+        <h1 className="text-2xl p-2 font-medium text-gray-800">Marketplace | Featured Products</h1>
         <hr />
         <FilterBar categories={categories} brands={brands} ratings={ratings} onFilterChange={handleFilterChange}/>
       </div>
@@ -82,7 +84,7 @@ export default function Marketplace(props) {
             <div className="h-[30em]">
             <Loader />
             </div> ): (
-            <div className=" grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4">
+            <div className=" grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
               {isFilterActive() ? filteredProducts.map((product) => (
             <GridProductCard product={product} />
           )) : ( products.map((product) => (

@@ -2,7 +2,7 @@ import { Carousel } from "flowbite-react";
 import { CarouselProductCard } from "./ProductCards";
 import React from "react";
 import { ArrowRightIcon } from "lucide-react";
-import useProducts from "../hooks/useProducts";
+import useProducts from "../../hooks/useProducts";
 
 function chunkArray(arr, size) {
   const result = [];
@@ -27,9 +27,9 @@ export default function DealsCarousel(props) {
         </div>
         <Carousel pauseOnHover className="h-72 md:h-72 lg:h-72 rounded-xl">
           {loading ? ( <p>loading...</p> ) : (imagePairs.map((pair, index) => (
-            <div key={index} className="flex justify-between p-8">
+            <div key={index} className="flex justify-evenly ">
               {pair.map((product, idx) => (
-                <CarouselProductCard key={idx} product={product} />
+                <CarouselProductCard key={idx} product={product}/>
               ))}
             </div>
           )))}

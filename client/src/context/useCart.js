@@ -1,4 +1,3 @@
-// store/cartStore.js
 import { create } from "zustand";
 import { supabase } from "../supabase";
 
@@ -9,7 +8,7 @@ export const useCartStore = create((set, get) => ({
 
   setCartId: (id) => set({ cartId: id }),
 
-  // Fetch user's cart (trigger ensures cart always exists)
+  // Fetch user's cart
   fetchCart: async (userId) => {
     if (!userId) return;
 
@@ -28,11 +27,12 @@ export const useCartStore = create((set, get) => ({
 
     set({
       cartId: data.id,
-      items: data.cart_items?.map((item) => ({
-        productId: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-      })) || [],
+      items:
+        data.cart_items?.map((item) => ({
+          productId: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+        })) || [],
       loading: false,
     });
   },
@@ -46,7 +46,7 @@ export const useCartStore = create((set, get) => ({
       return;
     }
 
-    // Optimistic UI update
+    // Optimistic update
     const updatedItems = [...items];
     const index = updatedItems.findIndex((i) => i.productId === product.id);
 
@@ -61,7 +61,7 @@ export const useCartStore = create((set, get) => ({
     }
     set({ items: updatedItems });
 
-    // Sync with Supabase via RPC
+    // Sync with Supabase
     const { error } = await supabase.rpc("upsert_cart_item", {
       p_cart_id: cartId,
       p_product_id: product.id,
@@ -74,12 +74,34 @@ export const useCartStore = create((set, get) => ({
     }
   },
 
-  // Remove a product from cart
-  removeFromCart: async (productId) => {
+  // Update quantity
+  updateQuantity: async (productId, newQty) => {
     const { cartId, items } = get();
     if (!cartId) return;
 
     // Optimistic update
+    const updatedItems = items.map((item) =>
+      item.productId === productId ? { ...item, quantity: newQty } : item
+    );
+    set({ items: updatedItems });
+
+    // Sync with Supabase
+    const { error } = await supabase
+      .from("cart_items")
+      .update({ quantity: newQty })
+      .eq("cart_id", cartId)
+      .eq("product_id", productId);
+
+    if (error) {
+      console.error("Error updating quantity:", error);
+    }
+  },
+
+  // Remove product from cart
+  removeFromCart: async (productId) => {
+    const { cartId, items } = get();
+    if (!cartId) return;
+
     set({ items: items.filter((item) => item.productId !== productId) });
 
     const { error } = await supabase
@@ -91,7 +113,7 @@ export const useCartStore = create((set, get) => ({
     if (error) console.error("Error removing from cart:", error);
   },
 
-  // Clear cart items
+  // Clear cart
   clearCart: async () => {
     const { cartId } = get();
     if (!cartId) return;
@@ -104,5 +126,11 @@ export const useCartStore = create((set, get) => ({
       .eq("cart_id", cartId);
 
     if (error) console.error("Error clearing cart:", error);
+  },
+
+  // **Getter for total price**
+  getTotal: () => {
+    const { items } = get();
+    return items.reduce((total, item) => total + item.price * item.quantity, 0);
   },
 }));
