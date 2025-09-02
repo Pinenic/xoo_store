@@ -1,8 +1,8 @@
 import React from "react";
-import FlowBiteHeader from "../components/FlowBiteHeader";
-import Hero from "../components/Hero";
-import PromotionBanner from "../components/PromotionBanner";
-import DealsCarousel from "../components/DealsCarousel";
+import FlowBiteHeader from "../components/global/FlowBiteHeader";
+import Hero from "../components/Landing/Hero";
+import PromotionBanner from "../components/Landing/PromotionBanner";
+import DealsCarousel from "../components/products/DealsCarousel";
 
 export default function Landing({}) {
   const categories = [

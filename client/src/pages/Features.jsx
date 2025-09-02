@@ -1,6 +1,6 @@
 import React from 'react'
-import FlowBiteHeader from '../components/FlowBiteHeader'
-import FeaturesHero from '../components/FeaturesHero'
+import FlowBiteHeader from '../components/global/FlowBiteHeader'
+import FeaturesHero from '../components/featuresPage/FeaturesHero'
 
 export default function Features({}) {
     

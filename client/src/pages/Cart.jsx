@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useCartStore } from "../context/useCart";
 import { Link } from "react-router-dom";
-import CartCard from "../components/CartCard";
+import CartCard from "../components/cart/CartCard";
 
 export default function Cart({user}) {
     const { items, fetchCart, addToCart, updateQuantity, removeFromCart, clearCart, loading } = useCartStore();
-    
-    const [totalPrice, setTotalPrice] = useState(0)
-    const [total, setTotal] = useState(0)
+    const getTotal = useCartStore((state) => state.getTotal)
+    const total = getTotal()
+    const savings = 19
+    const delivery = 29
 
    useEffect(() => {
     if (user) fetchCart(user.id);
@@ -29,7 +30,7 @@ export default function Cart({user}) {
         <ul>
           {items.map((item) => (
             <li key={item.productId}>
-              <CartCard item={item} remove={removeFromCart}/>
+              <CartCard item={item} update={updateQuantity} remove={removeFromCart}/>
             </li>
           ))}
         </ul></>
@@ -42,21 +43,21 @@ export default function Cart({user}) {
           <h2>Order summary</h2>
           <div className="flex justify-between">
             <p>Original Price</p>
-            <p>{total}</p>
+            <p>{total.toFixed(2)}</p>
           </div>
           <div className="flex justify-between">
             <p>Savings</p>
-            <p className="text-green-500">- K9</p>
+            <p className="text-green-500">- K{savings}</p>
           </div>
           <div className="flex justify-between">
             <p>Delivery</p>
-            <p>K19</p>
+            <p>K{delivery}</p>
           </div>
           <hr />
 
           <div className="flex justify-between">
             <p className="font-semibold">Total</p>
-            <p>K109</p>
+            <p>K{((total+delivery) - savings).toFixed(2)}</p>
           </div>
 
           <div className="flex flex-col w-full  mt-3 justify-between lg:justify-start px-2 gap-2">

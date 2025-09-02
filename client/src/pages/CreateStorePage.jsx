@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { Button, TextInput, Textarea, FileInput, Select, Radio } from "flowbite-react";
+import useStoreApi from "../hooks/useStore";
+import { useNavigate } from "react-router-dom";
 
-export default function CreateStorePage() {
+export default function CreateStorePage({user}) {
+  const {loading, error, createStore} = useStoreApi()
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    user_id: user.id,
     storeName: "",
     description: "",
-    logo: null,
+    file: null,
     category: "",
     paymentMethod: "",
     accountNumber: "",
@@ -25,7 +30,7 @@ export default function CreateStorePage() {
     if (step === 1) {
       if (!formData.storeName.trim()) newErrors.storeName = "Store name is required";
       if (!formData.description.trim()) newErrors.description = "Description is required";
-      if (!formData.logo) newErrors.logo = "Please upload a store logo";
+      if (!formData.file) newErrors.logo = "Please upload a store logo";
       if (!formData.category) newErrors.category = "Select a category";
     } else if (step === 2) {
       if (!formData.paymentMethod) newErrors.paymentMethod = "Select a payment method";
@@ -41,12 +46,24 @@ export default function CreateStorePage() {
 
   const prevStep = () => setStep(step - 1);
 
-  const handleSubmit = () => {
-    if (validateStep()) {
-      console.log("Submitting data:", formData);
-      alert("Store created successfully!");
-    }
-  };
+ const handleSubmit = async () => {
+  if (validateStep()) {
+    const payload = new FormData();
+
+    // Append all fields
+    Object.keys(formData).forEach((key) => {
+      payload.append(key, formData[key]);
+    });
+
+    console.log("Submitting data:", formData);
+
+    const newStore = await createStore(payload);
+    console.log(newStore);
+    if(!error || newStore) navigate("/stores/dashboard")
+
+  }
+};
+
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md">
@@ -86,11 +103,11 @@ export default function CreateStorePage() {
             className="mb-4"
           />
 
-          <FileInput
-            onChange={(e) => handleChange("logo", e.target.files[0])}
+          <input type="file" name="file" onChange={(e) => handleChange("file", e.target.files[0])} 
             color={errors.logo ? "failure" : "gray"}
-            className="mb-2"
-          />
+            className="mb-2" />
+
+          
           {errors.logo && <p className="text-red-500 text-sm">{errors.logo}</p>}
 
           <Select
@@ -162,7 +179,7 @@ export default function CreateStorePage() {
               checked={formData.plan === "professional"}
               onChange={(e) => handleChange("plan", e.target.value)}
             />
-            <label htmlFor="professional">Professional ($20/month)</label>
+            <label htmlFor="professional">Professional (K20/month)</label>
           </div>
         </div>
       )}

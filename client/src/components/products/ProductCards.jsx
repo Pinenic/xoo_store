@@ -2,8 +2,8 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Card } from "flowbite-react";
 import { Link } from "react-router-dom";
 import React, { useState } from "react";
-import QuantitySelector from "./QunatitySelector";
-import { useCartStore } from "../context/useCart";
+import QuantitySelector from "../global/QunatitySelector";
+import { useCartStore } from "../../context/useCart";
 
 export function CarouselProductCard({ product }) {
   const {addToCart} = useCartStore();

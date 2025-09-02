@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import LoginForm from "../components/LoginForm";
-import SignupForm from "../components/SignupForm";
+import LoginForm from "../components/Auth/LoginForm";
+import SignupForm from "../components/Auth/SignupForm";
 
 export default function AuthPage(props) {
   const [isLogin, setIsLogin] = useState(true);

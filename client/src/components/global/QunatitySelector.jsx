@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 
-export default function QuantitySelector({quantity, setQuantity}) {
+export default function QuantitySelector({quantity, setQuantity, update, id}) {
 
   const handleDecrease = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
+      update(id,quantity)
     }
   };
 
   const handleIncrease = () => {
     setQuantity(quantity + 1);
+      update(id,quantity)
   };
 
   const handleInputChange = (event) => {
@@ -18,6 +20,7 @@ export default function QuantitySelector({quantity, setQuantity}) {
     if (!isNaN(value) && value !== '') {
       const newQuantity = parseInt(value, 10);
       setQuantity(Math.max(1, newQuantity)); // Ensure quantity doesn't go below 1
+      update(id,quantity)
     }
   };
 

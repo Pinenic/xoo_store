@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import useProducts from "../hooks/useProductById";
-import ImageGallery from "../components/ImageGallery";
-import StarDisplay from "../components/StarDisplay";
+import ImageGallery from "../components/products/ImageGallery";
+import StarDisplay from "../components/products/StarDisplay";
 import { Heart, ShoppingCart } from "lucide-react";
-import QuantitySelector from "../components/QunatitySelector";
-import RadioButtonGroup from "../components/RadioButtonGroup";
-import FlowBiteHeader from "../components/FlowBiteHeader";
+import QuantitySelector from "../components/global/QunatitySelector";
+import RadioButtonGroup from "../components/products/RadioButtonGroup";
+import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import { useCartStore } from "../context/useCart";
 
 export default function ProductDetails({}) {

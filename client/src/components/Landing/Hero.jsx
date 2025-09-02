@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Dropdown, DropdownItem, TextInput, Carousel } from "flowbite-react";
 import { ArrowRightIcon, Search } from "lucide-react";
-import useProducts from "../hooks/useProducts";
+import useProducts from "../../hooks/useProducts";
 
 export default function Hero(props) {
   const [search, setSearch] = useState("");

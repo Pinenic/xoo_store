@@ -1,81 +1,112 @@
-import { useEffect } from 'react'
-import { ThemeInit } from '../../.flowbite-react/init';
+import { useEffect } from "react";
+import { ThemeInit } from "../../.flowbite-react/init";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "../components/ProtectedRoute";
-import { useAuth } from '../context/useAuth'
-import { useProfile } from '../context/useProfile'
-import AuthPage from './AuthPage'
-import Landing from './Landing'
-import Cart from './Cart';
-import WishListi from './WishListi';
-import ProductDetails from './ProductDetails';
-import Marketplace from './Marketplace';
-import Loader from '../components/Loader';
-import { useCartStore } from '../context/useCart';
-import Features from './Features';
-import CreateStorePage from './CreateStorePage';
-import FlowBiteHeader from '../components/FlowBiteHeader';
+import ProtectedRoute from "../components/Auth/ProtectedRoute";
+import { useAuth } from "../context/useAuth";
+import { useProfile } from "../context/useProfile";
+import AuthPage from "./AuthPage";
+import Landing from "./Landing";
+import Cart from "./Cart";
+import WishListi from "./WishListi";
+import ProductDetails from "./ProductDetails";
+import Marketplace from "./Marketplace";
+import Loader from "../components/global/Loader";
+import { useCartStore } from "../context/useCart";
+import Features from "./Features";
+import CreateStorePage from "./CreateStorePage";
+import FlowBiteHeader from "../components/global/FlowBiteHeader";
+import StoreDashboard from "./StoreDashboard";
+// ⬇️ dashboard imports
+import DashboardLayout from "../components/dashboard/DashboardLayout";
+import Overview from "./dashboard/index";
+import Products from "./dashboard/Products";
+import ProductForm from "./dashboard/ProductForm";
+import Orders from "./dashboard/Orders";
+import Analytics from "./dashboard/Analytics";
+import Settings from "./dashboard/Settings";
 
 export default function App() {
-  const { init, loading, user } = useAuth()
-  const { fetchProfile, profile } = useProfile()
-  const {fetchCart} = useCartStore()
+  const { init, loading, user } = useAuth();
+  const { fetchProfile, profile } = useProfile();
+  const { fetchCart } = useCartStore();
 
   useEffect(() => {
-    init()
-  }, [])
+    init();
+  }, []);
 
   useEffect(() => {
     if (user) {
-      console.log(user.id)
-      fetchProfile(user.id)
+      console.log(user.id);
+      fetchProfile(user.id);
       fetchCart(user.id);
     }
-  }, [user, fetchProfile, fetchCart])
+  }, [user, fetchProfile, fetchCart]);
 
-  if (loading) return <p>Loading app...</p>
+  if (loading) return <p>Loading app...</p>;
 
   return (
     <div>
       <ThemeInit />
       <Router>
         {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
-      <Routes>
-        <Route path="/" element={<Landing user={user} profile={profile}  />} />
-        <Route path='/products/:productId' element={<ProductDetails  user={user} profile={profile}/>}></Route>
-        <Route path='/marketplace' element={<Marketplace  user={user} profile={profile}/>}></Route>
-        <Route path='/features' element={<Features user={user} profile={profile}  />}>
-          
-        </Route>
+        <Routes>
+          <Route path="/" element={<Landing user={user} profile={profile} />} />
+          <Route
+            path="/products/:productId"
+            element={<ProductDetails user={user} profile={profile} />}
+          ></Route>
+          <Route
+            path="/marketplace"
+            element={<Marketplace user={user} profile={profile} />}
+          ></Route>
+          <Route
+            path="/features"
+            element={<Features user={user} profile={profile} />}
+          ></Route>
 
-        {/* Auth pages */}
-        <Route path="/auth" element={<AuthPage />} />
+          {/* Auth pages */}
+          <Route path="/auth" element={<AuthPage />} />
 
-        {/* Protected pages */}
-        <Route
-          path="/cart"
-          element={
-            <ProtectedRoute>
-              <Cart user={user}/>
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected pages */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/cart" element={<Cart user={user} />} />
+          </Route>
 
-        <Route
-          path="/wishlist"
-          element={
-            <ProtectedRoute>
-              <WishListi />
-            </ProtectedRoute>
-          }
-        />
-        <Route path='/features/start-selling' element={
-            <ProtectedRoute>
-              <CreateStorePage />
-            </ProtectedRoute>
-          } />
-      </Routes>
-    </Router>
+          <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <WishListi />
+              </ProtectedRoute>
+            }
+          />
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/features/start-selling"
+              element={<CreateStorePage user={user} />}
+            />
+          </Route>
+
+          {/* Protected seller dashboard */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/store/dashboard" element={<DashboardLayout />}>
+              <Route index element={<Overview />} />
+              <Route path="products" element={<Products />} />
+              <Route
+                path="products/new"
+                element={<ProductForm mode="create" />}
+              />
+              <Route
+                path="products/:id/edit"
+                element={<ProductForm mode="edit" />}
+              />
+              <Route path="orders" element={<Orders />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+          </Route>
+        </Routes>
+      </Router>
     </div>
-  )
+  );
 }

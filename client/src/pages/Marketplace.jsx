@@ -3,10 +3,10 @@ import React, { useMemo, useState } from "react";
 import useProductFilters from "../hooks/useProductFilters";
 import useProducts from "../hooks/useProducts";
 
-import { GridProductCard } from "../components/ProductCards";
-import FilterBar from "../components/FilterBar";
-import Loader from "../components/Loader";
-import FlowBiteHeader from "../components/FlowBiteHeader";
+import { GridProductCard } from "../components/products/ProductCards";
+import FilterBar from "../components/marketplace/FilterBar";
+import Loader from "../components/global/Loader";
+import FlowBiteHeader from "../components/global/FlowBiteHeader";
 
 export default function Marketplace({}) {
   const { categories, brands, ratings } = useProductFilters();

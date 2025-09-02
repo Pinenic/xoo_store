@@ -2,7 +2,7 @@ import { Carousel } from "flowbite-react";
 import { CarouselProductCard } from "./ProductCards";
 import React from "react";
 import { ArrowRightIcon } from "lucide-react";
-import useProducts from "../hooks/useProducts";
+import useProducts from "../../hooks/useProducts";
 
 function chunkArray(arr, size) {
   const result = [];

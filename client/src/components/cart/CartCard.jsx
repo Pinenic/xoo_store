@@ -1,10 +1,10 @@
 import { Heart } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import QuantitySelector from "./QunatitySelector";
-import useProduct from "../hooks/useProductById";
+import QuantitySelector from "../global/QunatitySelector";
+import useProduct from "../../hooks/useProductById";
 
-export default function CartCard({ item, remove }) {
+export default function CartCard({ item, update,remove }) {
   const { product, loading } = useProduct(item.productId);
   const [qty, setQty] = useState(item.quantity);
 
@@ -19,7 +19,7 @@ export default function CartCard({ item, remove }) {
             <img src={product.thumbnail} alt="" className="w-24 md:w-auto"/>
             <div className="flex  justify-between md:hidden">
               <div className="flex h-8 my-auto">
-                <QuantitySelector quantity={qty} setQuantity={setQty} />
+                <QuantitySelector quantity={qty} setQuantity={setQty} update={update} id={item.productId}/>
               </div>
               <h2 className="h-8 my-auto text-sm">K{totalPrice.toFixed(2)}</h2>
             </div>
@@ -42,7 +42,7 @@ export default function CartCard({ item, remove }) {
             </div>
             <div className="hidden md:flex md:justify-between md:w-1/3">
               <div className="flex h-8 my-auto">
-                <QuantitySelector quantity={qty} setQuantity={setQty} />
+                <QuantitySelector quantity={qty} setQuantity={setQty} update={update} id={item.productId} />
               </div>
               <h2 className="my-auto text-xs text-center h-fit font-medium">K{totalPrice.toFixed(2)}</h2>
             </div>
