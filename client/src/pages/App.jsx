@@ -15,7 +15,6 @@ import { useCartStore } from "../context/useCart";
 import Features from "./Features";
 import CreateStorePage from "./CreateStorePage";
 import FlowBiteHeader from "../components/global/FlowBiteHeader";
-import StoreDashboard from "./StoreDashboard";
 // ⬇️ dashboard imports
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import Overview from "./dashboard/index";
@@ -24,6 +23,10 @@ import ProductForm from "./dashboard/ProductForm";
 import Orders from "./dashboard/Orders";
 import Analytics from "./dashboard/Analytics";
 import Settings from "./dashboard/Settings";
+// Spinner import
+import FullScreenSpinner from "../components/global/spinners/FullSreenSpinner";
+import LoadingModal from "../components/global/spinners/LoadingModal";
+import StoreFront from "./StoreFront";
 
 export default function App() {
   const { init, loading, user } = useAuth();
@@ -42,7 +45,7 @@ export default function App() {
     }
   }, [user, fetchProfile, fetchCart]);
 
-  if (loading) return <p>Loading app...</p>;
+  if (loading) return <FullScreenSpinner show={loading} />;
 
   return (
     <div>
@@ -51,6 +54,7 @@ export default function App() {
         {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
         <Routes>
           <Route path="/" element={<Landing user={user} profile={profile} />} />
+          <Route path="/spina" element={<LoadingModal show={loading} />} />
           <Route
             path="/products/:productId"
             element={<ProductDetails user={user} profile={profile} />}
@@ -62,6 +66,10 @@ export default function App() {
           <Route
             path="/features"
             element={<Features user={user} profile={profile} />}
+          ></Route>
+          <Route
+            path="/store/:storeId"
+            element={<StoreFront user={user} profile={profile} />}
           ></Route>
 
           {/* Auth pages */}

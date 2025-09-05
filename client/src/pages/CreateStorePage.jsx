@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button, TextInput, Textarea, FileInput, Select, Radio } from "flowbite-react";
+import { Button, TextInput, Textarea, FileInput, Select, Radio, Alert } from "flowbite-react";
 import useStoreApi from "../hooks/useStore";
 import { useNavigate } from "react-router-dom";
+import LoadingModal from "../components/global/spinners/LoadingModal";
 
 export default function CreateStorePage({user}) {
   const {loading, error, createStore} = useStoreApi()
@@ -58,8 +59,10 @@ export default function CreateStorePage({user}) {
     console.log("Submitting data:", formData);
 
     const newStore = await createStore(payload);
+
     console.log(newStore);
-    if(!error || newStore) navigate("/stores/dashboard")
+    if(!error || newStore) navigate("/store/dashboard")
+    
 
   }
 };
@@ -67,6 +70,7 @@ export default function CreateStorePage({user}) {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md">
+      <LoadingModal show={loading} message="Creating store..." />
       {/* Progress Header */}
       <div className="mb-6">
         <p className="text-lg font-semibold text-gray-700">
@@ -90,7 +94,7 @@ export default function CreateStorePage({user}) {
             value={formData.storeName}
             onChange={(e) => handleChange("storeName", e.target.value)}
             color={errors.storeName ? "failure" : "gray"}
-            helperText={errors.storeName}
+            helpertext={errors.storeName}
             className="mb-4"
           />
 
@@ -99,7 +103,7 @@ export default function CreateStorePage({user}) {
             value={formData.description}
             onChange={(e) => handleChange("description", e.target.value)}
             color={errors.description ? "failure" : "gray"}
-            helperText={errors.description}
+            helpertext={errors.description}
             className="mb-4"
           />
 
@@ -149,7 +153,7 @@ export default function CreateStorePage({user}) {
             value={formData.accountNumber}
             onChange={(e) => handleChange("accountNumber", e.target.value)}
             color={errors.accountNumber ? "failure" : "gray"}
-            helperText={errors.accountNumber}
+            helpertext={errors.accountNumber}
             className="mb-2"
           />
         </div>
@@ -199,6 +203,8 @@ export default function CreateStorePage({user}) {
           </Button>
         )}
       </div>
+
+      {error ? <Alert color="failure"> <span>{error}</span> </Alert>: <p></p> }
     </div>
   );
 }
