@@ -27,6 +27,7 @@ import Settings from "./dashboard/Settings";
 import FullScreenSpinner from "../components/global/spinners/FullSreenSpinner";
 import LoadingModal from "../components/global/spinners/LoadingModal";
 import StoreFront from "./StoreFront";
+import MainFooter from "../components/global/Footer";
 
 export default function App() {
   const { init, loading, user } = useAuth();
@@ -48,9 +49,12 @@ export default function App() {
   if (loading) return <FullScreenSpinner show={loading} />;
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <ThemeInit />
       <Router>
+      {/* Main content grows to fill space */}
+      <main className="flex-grow">
+        {/* your routes / pages here */}
         {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}
         <Routes>
           <Route path="/" element={<Landing user={user} profile={profile} />} />
@@ -114,6 +118,8 @@ export default function App() {
             </Route>
           </Route>
         </Routes>
+      </main>
+        <MainFooter />
       </Router>
     </div>
   );

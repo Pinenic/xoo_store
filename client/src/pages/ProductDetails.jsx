@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import useProducts from "../hooks/useProductById";
 import ImageGallery from "../components/products/ImageGallery";
 import StarDisplay from "../components/products/StarDisplay";
@@ -9,12 +9,13 @@ import RadioButtonGroup from "../components/products/RadioButtonGroup";
 import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import { useCartStore } from "../context/useCart";
 
-export default function ProductDetails({}) {
+export default function ProductDetails({user}) {
   const { productId } = useParams();
   const { product, loading } = useProducts(productId);
   const [inStock, setInStock] = useState(true);
   const [qty, setQty] = useState(1);
   const {addToCart} = useCartStore();
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (loading) {
@@ -26,6 +27,9 @@ export default function ProductDetails({}) {
   const captitaliseFirst = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
+  const validate =(product, qty) =>{
+    user ? addToCart(product, qty) : navigate("/auth")
+  }
 
   return (
     <>
@@ -68,7 +72,7 @@ export default function ProductDetails({}) {
                     {" "}
                     <Heart className="w-5" /> Add to Wishlist{" "}
                   </button>
-                  <button className="flex justify-center gap-3 items-center text-center px-3 bg-blue-700 text-white w-full md:w-1/2 lg:w-1/3 py-2 p-1 rounded-lg text-sm" onClick={() => (addToCart(product, qty))}>
+                  <button className="flex justify-center gap-3 items-center text-center px-3 bg-blue-700 text-white w-full md:w-1/2 lg:w-1/3 py-2 p-1 rounded-lg text-sm" onClick={() => (user ? addToCart(product, qty): navigate("/auth"))}>
                     {" "}
                     <ShoppingCart className="w-5" /> Add to cart{" "}
                   </button>

@@ -1,26 +1,27 @@
 import { Heart, ShoppingCart } from "lucide-react";
 import { Card } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import QuantitySelector from "../global/QunatitySelector";
 import { useCartStore } from "../../context/useCart";
 
-export function CarouselProductCard({ product }) {
+export function CarouselProductCard({ product, user }) {
   const {addToCart} = useCartStore();
   const [qty, setQty] = useState(1);
+  const navigate = useNavigate()
   const imgUrl =
     "https://xbyfrxtfdvmsbvgzpcyw.supabase.co/storage/v1/object/public/imageUpload/public/11/public-uploaded-image-1755693475579.jpg";
 
   return (
     <>
       <Card
-        className="flex gap-4 justify-between md:w-1/2 lg:max-w-lg  max-h-48 p-4"
+        className="lg:flex gap-4 justify-between md:w-1/2 lg:max-w-lg  max-h-48 p-4"
         renderImage={() => (
-          <img src={product.thumbnail} alt="image 1" className="w-48" />
+          <img src={product.thumbnail} alt="image 1" className="w-32" />
         )}
         horizontal
       >
-        <div className="flex flex-col md:w-64 lg:w-64">
+        <div className="flex flex-col md:w-72 lg:w-64">
           <h2 className=" font-medium p-1">{product.title}</h2>
           <div className="flex p-1 justify-between">
             <h2 className="text font-semibold">K{product.price}</h2>
@@ -35,7 +36,49 @@ export function CarouselProductCard({ product }) {
           <div className="flex mt-3 gap-2 px-2">
             <Heart className="my-auto"/>
             <button
-              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (addToCart(product, qty))}
+              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (user ? addToCart(product, qty): navigate("/auth"))}
+            >
+              {" "}
+              <ShoppingCart className="w-5" /> Add to cart{" "}
+            </button>
+          </div>
+        </div>
+      </Card>
+    </>
+  );
+}
+export function CaruoselMobileCard({product, user}){
+    const {addToCart} = useCartStore();
+  const [qty, setQty] = useState(1);
+  const navigate = useNavigate()
+  const imgUrl =
+    "https://xbyfrxtfdvmsbvgzpcyw.supabase.co/storage/v1/object/public/imageUpload/public/11/public-uploaded-image-1755693475579.jpg";
+
+  return (
+    <>
+      <Card
+        className="lg:flex gap-4 justify-between md:w-3/4 lg:max-w-lg  max-h-full md:max-h-64 self-center m-auto my-auto p-4"
+        renderImage={() => (
+          <img src={product.thumbnail} alt="image 1" className="w-40" />
+        )}
+        horizontal
+      >
+        <div className="flex flex-col h-40 md:w-72 lg:w-64">
+          <h2 className=" font-medium p-1">{product.title}</h2>
+          <div className="flex p-1 justify-between">
+            <h2 className="text font-semibold">K{product.price}</h2>
+            <p className="text-sm text-gray-700 mt-1">(34)reviews</p>
+          </div>
+          <hr />
+          <div className="flex flex-col p-2 py-2">
+            <p>Qty:</p>
+            <QuantitySelector  quantity={qty} setQuantity={setQty} />
+          </div>
+          <hr />
+          <div className="flex mt-3 gap-2 px-2">
+            <Heart className="my-auto"/>
+            <button
+              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (user ? addToCart(product, qty): navigate("/auth"))}
             >
               {" "}
               <ShoppingCart className="w-5" /> Add to cart{" "}
