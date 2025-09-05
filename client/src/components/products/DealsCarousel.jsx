@@ -12,7 +12,7 @@ function chunkArray(arr, size) {
   return result;
 }
 
-export default function DealsCarousel(props) {
+export default function DealsCarousel({user}) {
   const { products, loading } = useProducts(12);
   const imagePairs = chunkArray(products, 2);
 
@@ -29,7 +29,7 @@ export default function DealsCarousel(props) {
           {loading ? ( <p>loading...</p> ) : (imagePairs.map((pair, index) => (
             <div key={index} className="flex justify-evenly md:gap-3 ">
               {pair.map((product, idx) => (
-                <CarouselProductCard key={idx} product={product}/>
+                <CarouselProductCard key={idx} product={product} user={user}/>
               ))}
             </div>
           )))}
@@ -37,7 +37,7 @@ export default function DealsCarousel(props) {
         <Carousel pauseOnHover className="flex h-[450px] lg:hidden items-center md:h-64 lg:h-72 rounded-xl">
           {loading ? ( <p>loading...</p> ) : (
               products.map((product) => (
-                <CaruoselMobileCard product={product}/>
+                <CaruoselMobileCard product={product}user={user}/>
               )))}
         </Carousel>
       </div>

@@ -9,7 +9,7 @@ import Loader from "../components/global/Loader";
 import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import DealsCarousel from "../components/products/DealsCarousel";
 
-export default function Marketplace({}) {
+export default function Marketplace({user}) {
   const { categories, brands, ratings } = useProductFilters();
   const {products, loading} = useProducts(300)
 
@@ -78,7 +78,7 @@ export default function Marketplace({}) {
         <h1 className="text-2xl p-2 font-medium text-gray-800">Marketplace | Featured Products</h1>
         <hr />
       {/** Latest Deal carousel */}
-      <DealsCarousel />
+      <DealsCarousel user={user}/>
         <hr />
         <FilterBar categories={categories} brands={brands} ratings={ratings} onFilterChange={handleFilterChange}/>
       </div>

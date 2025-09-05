@@ -1,13 +1,14 @@
 import { Heart, ShoppingCart } from "lucide-react";
 import { Card } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import QuantitySelector from "../global/QunatitySelector";
 import { useCartStore } from "../../context/useCart";
 
-export function CarouselProductCard({ product }) {
+export function CarouselProductCard({ product, user }) {
   const {addToCart} = useCartStore();
   const [qty, setQty] = useState(1);
+  const navigate = useNavigate()
   const imgUrl =
     "https://xbyfrxtfdvmsbvgzpcyw.supabase.co/storage/v1/object/public/imageUpload/public/11/public-uploaded-image-1755693475579.jpg";
 
@@ -35,7 +36,7 @@ export function CarouselProductCard({ product }) {
           <div className="flex mt-3 gap-2 px-2">
             <Heart className="my-auto"/>
             <button
-              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (addToCart(product, qty))}
+              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (user ? addToCart(product, qty): navigate("/auth"))}
             >
               {" "}
               <ShoppingCart className="w-5" /> Add to cart{" "}
@@ -46,9 +47,10 @@ export function CarouselProductCard({ product }) {
     </>
   );
 }
-export function CaruoselMobileCard({product}){
+export function CaruoselMobileCard({product, user}){
     const {addToCart} = useCartStore();
   const [qty, setQty] = useState(1);
+  const navigate = useNavigate()
   const imgUrl =
     "https://xbyfrxtfdvmsbvgzpcyw.supabase.co/storage/v1/object/public/imageUpload/public/11/public-uploaded-image-1755693475579.jpg";
 
@@ -76,7 +78,7 @@ export function CaruoselMobileCard({product}){
           <div className="flex mt-3 gap-2 px-2">
             <Heart className="my-auto"/>
             <button
-              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (addToCart(product, qty))}
+              className="flex justify-evenly items-center text-center px-3 bg-blue-700 text-white w-2/3 p-1 rounded-lg text-sm" onClick={() => (user ? addToCart(product, qty): navigate("/auth"))}
             >
               {" "}
               <ShoppingCart className="w-5" /> Add to cart{" "}
