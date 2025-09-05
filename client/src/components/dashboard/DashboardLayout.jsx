@@ -52,7 +52,7 @@ export default function DashboardLayout() {
   if (loading) {
     console.log("⏳ Still loading dashboard...");
     return (
-      <div className="min-h-screen grid place-items-center">
+      <div className="grid place-items-center">
         <p className="text-gray-500">Loading dashboard…</p>
       </div>
     );
@@ -61,7 +61,7 @@ export default function DashboardLayout() {
   console.log("🎉 Store ready, rendering dashboard:", store);
 
   return (
-    <div className="h-screen bg-gray-50">
+    <div className=" bg-gray-50">
       <Topbar storeName={store?.store_name || "My Store"} storeId={store.id} />
       <div className="flex h-full bg-gray-50">
         <Sidebar />
