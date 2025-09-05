@@ -11,10 +11,11 @@ const active = "bg-gray-100 text-gray-900";
 
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-4">
-      <Link to="/" className="font-semibold">{storeName}</Link>
+    <header className="flex flex-col h-16 md:h-8 border-b bg-white">
+      <div className=" flex items-center justify-between px-4">
+      <Link to="/store/dashboard" className="font-semibold">{storeName}</Link>
       <div className="flex items-center gap-2">
-      <nav className="flex md:hidden px-2">
+      <nav className="flex md:hidden">
         <NavLink end to="/store/dashboard" className={({isActive}) => `${item} ${isActive?active:"text-gray-600"}`}><LayoutDashboard  className="w-4"/></NavLink>
         <NavLink to="products" className={({isActive}) => `${item} ${isActive?active:"text-gray-600"}`}><Package  className="w-4" /></NavLink>
         <NavLink to="orders" className={({isActive}) => `${item} ${isActive?active:"text-gray-600"}`}><ShoppingCart  className="w-4" /></NavLink>
@@ -23,6 +24,8 @@ const active = "bg-gray-100 text-gray-900";
       </nav>
         <Link to={`/store/${storeId}`} className="hidden md:flex text-sm text-gray-600 hover:text-gray-900">Storefront</Link>
       </div>
+      </div>
+      <Link to={`/store/${storeId}`} className="md:hidden text-sm text-gray-600 hover:text-gray-900 text-right px-6 p-1">Storefront</Link>
     </header>
   );
 }

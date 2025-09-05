@@ -3,6 +3,8 @@ import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import Hero from "../components/Landing/Hero";
 import PromotionBanner from "../components/Landing/PromotionBanner";
 import DealsCarousel from "../components/products/DealsCarousel";
+import AboutSection from "../components/Landing/AboutSection";
+import FinalCTA from "../components/Landing/FinalCTA";
 
 export default function Landing({}) {
   const categories = [
@@ -47,9 +49,8 @@ export default function Landing({}) {
         </div>
       </div>
       <PromotionBanner />
-      {/** Latest Deal carousel */}
-      <DealsCarousel />
- 
+          <AboutSection />
+          <FinalCTA />
     </>
   );
 }

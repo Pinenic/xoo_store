@@ -12,7 +12,7 @@ export default function StoreHero({
   return (
     <section className="relative w-full">
       {/* Banner */}
-      <div className="relative h-56 sm:h-72 md:h-96">
+      <div className="relative h-80 sm:h-72 md:h-96">
         <img
           src={bannerUrl}
           alt="Store Banner"
@@ -39,7 +39,7 @@ export default function StoreHero({
               Shop Now
             </Button>
             <Button color="gray" onClick={onContact}>
-              Contact Seller
+              Follow
             </Button>
           </div>
         </Card>

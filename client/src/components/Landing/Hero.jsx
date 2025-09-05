@@ -20,7 +20,7 @@ export default function Hero(props) {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row p-6 gap-8 md:h-[40em]">
+      <div className="flex flex-col md:flex-row md:p-6 gap-8 md:h-[40em]">
         <div className="flex flex-col gap-4 md:w-[50%] lg:w-[60%] p-4">
           <h1 className="text-3xl lg:text-5xl font-bold px-4 md:px-1">
             Don't miss out on Exclusive Deals made just for you.
@@ -76,7 +76,7 @@ export default function Hero(props) {
             </div>
           </div>
         </div>
-        <div className="h-[25em] md:h-full md:w-[50%] lg:w-[40%]">
+        <div className="h-[25em] p-2 md:h-full md:w-[50%] lg:w-[40%]">
           <Carousel
             indicators={false}
             className="md:h-[80%] lg:h-[80%] bg-cyan-50 border-2 rounded-xl"

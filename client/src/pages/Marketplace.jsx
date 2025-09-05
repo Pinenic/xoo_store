@@ -7,6 +7,7 @@ import { GridProductCard } from "../components/products/ProductCards";
 import FilterBar from "../components/marketplace/FilterBar";
 import Loader from "../components/global/Loader";
 import FlowBiteHeader from "../components/global/FlowBiteHeader";
+import DealsCarousel from "../components/products/DealsCarousel";
 
 export default function Marketplace({}) {
   const { categories, brands, ratings } = useProductFilters();
@@ -75,6 +76,9 @@ export default function Marketplace({}) {
       
       <div className="flex flex-col border-2">
         <h1 className="text-2xl p-2 font-medium text-gray-800">Marketplace | Featured Products</h1>
+        <hr />
+      {/** Latest Deal carousel */}
+      <DealsCarousel />
         <hr />
         <FilterBar categories={categories} brands={brands} ratings={ratings} onFilterChange={handleFilterChange}/>
       </div>

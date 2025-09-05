@@ -21,8 +21,8 @@ export default function Cart({user}) {
   return (
     <>
       <h1 className="text-xl p-2 font-medium">Shopping Cart</h1>
-      <div className="flex flex-col md:flex-row md:justify-evenly h-screen md:p-4">
-        <div className="flex flex-col w-full h-fit rounded-lg p-4">
+      <div className="flex flex-col md:flex-row md:justify-evenly md:h-[50vh] md:p-4">
+        <div className="flex flex-col w-full rounded-lg p-4">
           {items.length === 0 ? (
         <p className="text-gray-500">Your cart is empty.</p>
       ) : (
