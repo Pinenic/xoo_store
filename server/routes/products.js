@@ -368,10 +368,20 @@ if(imageUploadedError){ return res.status(500).json({
 
             let obj = data.images;
             obj.push(dataForUrl.publicUrl);
-
+const product = {
+      title: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      stock: req.body.stock,
+      details: { size: req.body.size, color: req.body.color },
+      category: req.body.category,
+      brand: req.body.brand,
+      shipping_information: req.body.shipping_imformation,
+      images: obj
+    };
             await supabase
               .from("products")
-              .update({ images: obj })
+              .update(product)
               .eq("id", array[0]);
           }
         }
