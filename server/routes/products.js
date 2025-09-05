@@ -249,10 +249,17 @@ router.delete("/:id", async (req, res) => {
   // }
 });
 
+
+
+
+
+
+
+
+
 // route update the product by ID,
 // the ID is passed through the params
 router.put("/:id", upload.any(), async (req, res) => {
-  const uidFoimage = uuid();
   let array = [req.params.id];
   let isReset = false;
   const { data } = await supabase
@@ -272,9 +279,57 @@ router.put("/:id", upload.any(), async (req, res) => {
     if (req.files.length >= 1) {
       for (const file of req.files) {
         if (file.fieldname === "file") {
-        
-        }
+          const uidFoimage = uuid();
+        const File = fs.readFileSync(file.path);
 
+ //deleting the pre image while update the new one
+        const pre_image_url = data[0].thumbnail.split("/");
+       supabase.storage
+      .from(`user_uploads`)
+      .remove(`${folderPath}${pre_image_url[10]}`);
+        
+        // this function waits until the product image is posted in the storage
+      const   {data:imageUploaded,error:imageUploadedError}= await supabase.storage
+          .from(`user_uploads/${user_id}/products`)
+          .upload(`public-uploaded-image-${uidFoimage}.jpg`, File, {
+            contentType: "image/jpeg",
+          });
+if(imageUploadedError){ return res.status(500).json({
+  data:"error try again",error:imageUploadedError.message
+})}
+        //this function wait until it gets the url data and asign it as ImageUrl
+        const { data:newUrl, error:newUrlError } = await supabase.storage
+          .from(`user_uploads/${user_id}/products`)
+          .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
+
+        if (newUrlError ) {
+          return res.status(500).json({data:"error try again", error: error.message });
+        }
+        const ImageUrl = newUrl.publicUrl;
+
+        //this is a product json with a ImageUrl and store_id
+        const product= {
+          store_id: req.body.store_id,
+          title: req.body.name,
+          description: req.body.description,
+          price: req.body.price,
+          stock: req.body.stock,
+          details: { size: req.body.size, color:req.body.color },
+          thumbnail: ImageUrl,
+          category:req.body.category,
+          brand:req.body.brand,
+          shipping_information:req.body.shipping_imformation,
+        };
+
+    try {
+      await supabase.from("products").update(product).eq("id", req.params.id);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+      console.log(error);
+    }
+
+
+        }
         if ((await array.length) > 0) {
           if (file.fieldname === "files") {
             if (isReset === false) {
@@ -323,9 +378,8 @@ router.put("/:id", upload.any(), async (req, res) => {
       }
       return res.status(200).send("product updated");
     }
-
-    const product = {
-      store_id: req.body.store_id,
+else{
+const product = {
       title: req.body.name,
       description: req.body.description,
       price: req.body.price,
@@ -334,15 +388,16 @@ router.put("/:id", upload.any(), async (req, res) => {
       category: req.body.category,
       brand: req.body.brand,
       shipping_information: req.body.shipping_imformation,
-      tags: req.body.tags,
     };
     try {
-      await supabase.from("products").update([product]).eq("id", req.params.id);
+      await supabase.from("products").update(product).eq("id", req.params.id);
+     return  res.status(200).send("product updated");
     } catch (error) {
       res.status(500).json({ error: error.message });
       console.log(error);
     }
-    res.status(200).send("product updated");
+}
+    
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
