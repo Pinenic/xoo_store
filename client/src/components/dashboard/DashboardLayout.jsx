@@ -62,7 +62,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="h-screen bg-gray-50">
-      <Topbar storeName={store?.store_name || "My Store"} />
+      <Topbar storeName={store?.store_name || "My Store"} storeId={store.id} />
       <div className="flex h-full bg-gray-50">
         <Sidebar />
         <main className="flex-1 p-4 md:p-6 min-h-[calc(100vh-64px)] overflow-scroll">
