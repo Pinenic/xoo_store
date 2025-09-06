@@ -28,6 +28,7 @@ import FullScreenSpinner from "../components/global/spinners/FullSreenSpinner";
 import LoadingModal from "../components/global/spinners/LoadingModal";
 import StoreFront from "./StoreFront";
 import MainFooter from "../components/global/Footer";
+import ScrollToTop from "../components/global/ScrollToTop";
 
 export default function App() {
   const { init, loading, user } = useAuth();
@@ -53,6 +54,7 @@ export default function App() {
       <ThemeInit />
       <Router>
       {/* Main content grows to fill space */}
+      <ScrollToTop />
       <main className="flex-grow">
         {/* your routes / pages here */}
         {user ? <FlowBiteHeader profile={profile} /> : <FlowBiteHeader />}

@@ -8,16 +8,33 @@ import QuantitySelector from "../components/global/QunatitySelector";
 import RadioButtonGroup from "../components/products/RadioButtonGroup";
 import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import { useCartStore } from "../context/useCart";
+import useMarketplace from "../hooks/uesMarketplace";
 
 export default function ProductDetails({user}) {
   const { productId } = useParams();
-  const { product, loading } = useProducts(productId);
+  //const { product, loading } = useProducts(productId);
+  const [product, setProduct] = useState({})
   const [inStock, setInStock] = useState(true);
   const [qty, setQty] = useState(1);
   const {addToCart} = useCartStore();
   const navigate = useNavigate()
+      const [loading, setLoading] = useState(true);
+  const { error, getProductById} = useMarketplace()
+
+  const load = async () => {
+        setLoading(true);
+        try {
+          const data = await getProductById(productId);
+          console.log(data)
+          error ? console.log(error) : setProduct(data[0]);;
+        } finally {
+          setLoading(false);
+        }
+      };
 
   useEffect(() => {
+    load()
+
     if (loading) {
       setInStock(true);
     } else if (product.stock <= 0) {
@@ -40,7 +57,7 @@ export default function ProductDetails({user}) {
         <>
           <div className="flex flex-col items-center md:items-start md:flex-row md:justify-evenly md:gap-8 w-screen md:p-6">
             <div className="w-3/4 md:w-96">
-              <ImageGallery product={product} />
+              {<ImageGallery product={product} />}
             </div>
             <div className="flex flex-col w-full px-3 md:w-2/3 lg:w-1/2">
               <div className="flex flex-col">
@@ -56,14 +73,14 @@ export default function ProductDetails({user}) {
                 <h2 className="text-2xl font-medium py-2 md:p-2 ">
                   {product.title}
                   {", "}
-                  {product.tags.map((tag) => captitaliseFirst(tag) + ", ")}
+                  {/*product.tags.map((tag) => captitaliseFirst(tag) + ", ")*/}
                   {product.brand}
                 </h2>
                 <div className="flex gap-4">
-                  <StarDisplay rating={product.rating} />
-                  <p className="pt-1">{product.rating.toFixed(1)}</p>
+                  <StarDisplay rating={4.5} />
+                  <p className="pt-1">{4.5.toFixed(1)}</p>
                   <a href="#" className="underline pt-1">
-                    {"(" + product.reviews.length + ")"} reviews
+                    {"(" + 7 + ")"} reviews
                   </a>
                 </div>
                 <h2 className="text-2xl font-semibold py-2 md:p-2">K{product.price}</h2>

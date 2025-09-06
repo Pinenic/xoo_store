@@ -1,12 +1,31 @@
 import { Heart } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import QuantitySelector from "../global/QunatitySelector";
 import useProduct from "../../hooks/useProductById";
+import useMarketplace from "../../hooks/uesMarketplace";
 
 export default function CartCard({ item, update,remove }) {
-  const { product, loading } = useProduct(item.productId);
+  //const { product, loading } = useProduct(item.productId);
+    const [product, setProduct] = useState({})
   const [qty, setQty] = useState(item.quantity);
+        const [loading, setLoading] = useState(true);
+    const { error, getProductById} = useMarketplace()
+  
+    const load = async () => {
+          setLoading(true);
+          try {
+            const data = await getProductById(item.productId);
+            console.log(data)
+            error ? console.log(error) : setProduct(data[0]);;
+          } finally {
+            setLoading(false);
+          }
+        };
+  
+    useEffect(() => {
+      load()
+    }, []);
 
   const totalPrice = item.price * qty;
   return (

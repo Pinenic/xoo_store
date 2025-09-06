@@ -8,7 +8,7 @@ export default function AboutSection() {
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Heading */}
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          About Our Storefront
+          About Us
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-12">
           We’re making it simple to shop and sell online. Whether you’re here to

@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 
 const ImageGallery = ({product}) => {
-  const [activeImage, setActiveImage] = useState(product.images[0]); // Default to the first image
+  const [activeImage, setActiveImage] = useState(product.thumbnail); // Default to the first image
+  const imgArr = [product.thumbnail, ...product.images]
 
   return (
     <div className="flex flex-col items-center">
@@ -17,7 +18,7 @@ const ImageGallery = ({product}) => {
 
       {/* Image Tabs (Thumbnails) */}
       <div className="flex justify-center space-x-2">
-        {product.images.map((image) => (
+        {imgArr.map((image) => (
           <button
             key={image.id}
             onClick={() => setActiveImage(image)}
