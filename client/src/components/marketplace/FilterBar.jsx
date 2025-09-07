@@ -44,7 +44,7 @@ export default function FilterBar({categories, brands, ratings, onFilterChange }
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 p-4 bg-white shadow rounded-lg">
+    <div className="flex flex-wrap items-center gap-4 px-1 p-4 ">
       {/* Category Dropdown */}
       <Dropdown label={filters.category || "Category"} >
         {categories.map((cat) => (

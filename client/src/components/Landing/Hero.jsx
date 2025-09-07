@@ -27,7 +27,7 @@ export default function Hero(props) {
           </h1>
           <p className="text-lg p-1 text-gray-600 px-6 md:px-1">
             Made for easy shopping
-          </p>
+          </p>{/*
           <form
             action=""
             className="flex justify-between rounded-lg border-2 w-[95%] self-center mt-8"
@@ -53,7 +53,7 @@ export default function Hero(props) {
               required
             />
             <Search className="rounded-none h-full w-10 p-1 px-2 hover:cursor-pointer " />
-          </form>
+          </form>*/}
           <hr className="w-[95%] self-center py-2 mt-5" />
           <div className="flex p-4 md:px-1">
             <div className="w-1/2">

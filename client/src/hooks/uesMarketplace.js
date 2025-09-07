@@ -29,13 +29,16 @@ const useMarketplace = () => {
   const getAllProducts = useCallback(( limit) => apiCall("get", `/products?limit=${limit}`), [apiCall]);
   const getProductById = useCallback(( id) => apiCall("get", `/products/${id}`), [apiCall]);
   const getLatestProducts = useCallback(( limit) => apiCall("get", `/products?limit=${limit}`), [apiCall]);
+  const searchProducts = useCallback(( query) => apiCall("get", `/seach?q=${query}`), [apiCall]);
+
 
   return {
     loading,
     error,
     getAllProducts,
     getProductById,
-    getLatestProducts
+    getLatestProducts,
+    searchProducts
   };
 }
 export default useMarketplace;

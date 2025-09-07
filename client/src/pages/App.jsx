@@ -29,6 +29,7 @@ import LoadingModal from "../components/global/spinners/LoadingModal";
 import StoreFront from "./StoreFront";
 import MainFooter from "../components/global/Footer";
 import ScrollToTop from "../components/global/ScrollToTop";
+import About from "./About";
 
 export default function App() {
   const { init, loading, user } = useAuth();
@@ -77,6 +78,7 @@ export default function App() {
             path="/store/:storeId"
             element={<StoreFront user={user} profile={profile} />}
           ></Route>
+          <Route path="/about" element={<About />}></Route>
 
           {/* Auth pages */}
           <Route path="/auth" element={<AuthPage />} />

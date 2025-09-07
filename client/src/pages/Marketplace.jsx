@@ -6,9 +6,11 @@ import FilterBar from "../components/marketplace/FilterBar";
 import Loader from "../components/global/Loader";
 import DealsCarousel from "../components/products/DealsCarousel";
 import useMarketplace from "../hooks/uesMarketplace";
+import SearchBar from "../components/global/SearchBar";
 
 export default function Marketplace({ user }) {
   const { categories, brands, ratings } = useProductFilters();
+  const [searchResults, setSearchResults] = useState([]);
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -27,8 +29,11 @@ export default function Marketplace({ user }) {
   });
 
   //pagination
-  const onPageChange = (page) => {setCurrentPage(page); 
-      window.scrollTo({ top: 0, behavior: "smooth" });}
+  const onPageChange = (page) => {
+    setCurrentPage(page);
+    const el = document.querySelector("#product-grid");
+    el.scrollIntoView({ behavior: "smooth" });
+  };
 
   //db products load
   const load = async () => {
@@ -106,14 +111,18 @@ export default function Marketplace({ user }) {
     setFilters(filters);
     // Trigger API call or filter logic here
   };
-  const totalPages = isFilterActive
-  ? Math.max(1, Math.ceil(filteredProducts.length / PerPage))
-  : Math.max(1, Math.ceil(products.length / PerPage));
-
+  // Determine the products to render
+  const displayedProducts =
+    searchResults.length > 0
+      ? searchResults
+      : isFilterActive()
+      ? filteredProducts
+      : products;
+  const totalPages = Math.max(1, Math.ceil(displayedProducts.length / PerPage));
 
   return (
     <>
-      <div className="flex flex-col border-2">
+      <div className="border-2">
         <h1 className="text-2xl p-2 font-medium text-gray-800">
           Marketplace | Featured Products
         </h1>
@@ -121,12 +130,15 @@ export default function Marketplace({ user }) {
         {/** Latest Deal carousel */}
         <DealsCarousel user={user} />
         <hr />
-        <FilterBar
-          categories={categories}
-          brands={brands}
-          ratings={ratings}
-          onFilterChange={handleFilterChange}
-        />
+      </div>
+      <div className="sticky top-[60px] z-40 p-4 bg-white shadow rounded-lg flex flex-col">
+        <SearchBar onResults={setSearchResults} />
+      <FilterBar
+        categories={categories}
+        brands={brands}
+        ratings={ratings}
+        onFilterChange={handleFilterChange}
+      />
       </div>
 
       {/** Product Grid */}
@@ -135,16 +147,21 @@ export default function Marketplace({ user }) {
           <Loader />
         </div>
       ) : (
-        <div className=" flex flex-col items-center mb-8">
-          <div className=" grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
-            {isFilterActive()
-              ? filteredProducts.slice(indexOfFirst, indexOfLast).map((product) => (
-                  <GridProductCard product={product} />
+        <div className=" flex flex-col items-center mb-8 scroll-m-[300px] md:scroll-m-[200px]" id="product-grid">
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
+            {displayedProducts.length > 0 ? (
+              displayedProducts
+                .slice(indexOfFirst, indexOfLast)
+                .map((product) => (
+                  <GridProductCard key={product.id} product={product} />
                 ))
-              : products.slice(indexOfFirst, indexOfLast).map((product) => (
-                  <GridProductCard product={product} />
-                ))}
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                No products found.
+              </div>
+            )}
           </div>
+
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
