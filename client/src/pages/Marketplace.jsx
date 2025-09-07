@@ -1,25 +1,55 @@
-import { Dropdown, DropdownItem } from "flowbite-react";
-import React, { useMemo, useState } from "react";
+import { Dropdown, DropdownItem, Pagination } from "flowbite-react";
+import React, { useEffect, useMemo, useState } from "react";
 import useProductFilters from "../hooks/useProductFilters";
-import useProducts from "../hooks/useProducts";
-
 import { GridProductCard } from "../components/products/ProductCards";
 import FilterBar from "../components/marketplace/FilterBar";
 import Loader from "../components/global/Loader";
-import FlowBiteHeader from "../components/global/FlowBiteHeader";
 import DealsCarousel from "../components/products/DealsCarousel";
+import useMarketplace from "../hooks/uesMarketplace";
+import SearchBar from "../components/global/SearchBar";
 
-export default function Marketplace({user}) {
+export default function Marketplace({ user }) {
   const { categories, brands, ratings } = useProductFilters();
-  const {products, loading} = useProducts(300)
+  const [searchResults, setSearchResults] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const { error, getAllProducts } = useMarketplace();
+  //const {products, loading} = useProducts(300)
+  const PerPage = 12;
+  const indexOfLast = currentPage * PerPage;
+  const indexOfFirst = indexOfLast - PerPage;
 
-    const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState({
     category: "",
     brand: "",
     price: "",
     rating: "",
     sort: "newest",
   });
+
+  //pagination
+  const onPageChange = (page) => {
+    setCurrentPage(page);
+    const el = document.querySelector("#product-grid");
+    el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  //db products load
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllProducts();
+      console.log(data);
+      error ? console.log(error) : setProducts(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   // Filter products whenever filters change
   const isFilterActive = () =>
@@ -36,17 +66,28 @@ export default function Marketplace({user}) {
     return products
       .filter((product) => {
         // Category Filter
-        if (filters.category && product.category !== filters.category) return false;
+        if (filters.category && product.category !== filters.category)
+          return false;
 
         // Brand Filter
         if (filters.brand && product.brand !== filters.brand) return false;
 
         // Price Filter
         if (filters.price) {
-          if (filters.price === "Under $50" && product.price >= 50) return false;
-          if (filters.price === "$50 - $100" && (product.price < 50 || product.price > 100)) return false;
-          if (filters.price === "$100 - $500" && (product.price < 100 || product.price > 500)) return false;
-          if (filters.price === "Above $500" && product.price <= 500) return false;
+          if (filters.price === "Under $50" && product.price >= 50)
+            return false;
+          if (
+            filters.price === "$50 - $100" &&
+            (product.price < 50 || product.price > 100)
+          )
+            return false;
+          if (
+            filters.price === "$100 - $500" &&
+            (product.price < 100 || product.price > 500)
+          )
+            return false;
+          if (filters.price === "Above $500" && product.price <= 500)
+            return false;
         }
 
         // Rating Filter
@@ -65,38 +106,70 @@ export default function Marketplace({user}) {
       });
   }, [filters]);
 
-    const handleFilterChange = (filters) => {
+  const handleFilterChange = (filters) => {
     console.log("Active Filters:", filters);
-    setFilters(filters)
+    setFilters(filters);
     // Trigger API call or filter logic here
   };
+  // Determine the products to render
+  const displayedProducts =
+    searchResults.length > 0
+      ? searchResults
+      : isFilterActive()
+      ? filteredProducts
+      : products;
+  const totalPages = Math.max(1, Math.ceil(displayedProducts.length / PerPage));
 
   return (
     <>
-      
-      <div className="flex flex-col border-2">
-        <h1 className="text-2xl p-2 font-medium text-gray-800">Marketplace | Featured Products</h1>
+      <div className="border-2">
+        <h1 className="text-2xl p-2 font-medium text-gray-800">
+          Marketplace | Featured Products
+        </h1>
         <hr />
-      {/** Latest Deal carousel */}
-      <DealsCarousel user={user}/>
+        {/** Latest Deal carousel */}
+        <DealsCarousel user={user} />
         <hr />
-        <FilterBar categories={categories} brands={brands} ratings={ratings} onFilterChange={handleFilterChange}/>
+      </div>
+      <div className="sticky top-[60px] z-40 p-4 bg-white shadow rounded-lg flex flex-col">
+        <SearchBar onResults={setSearchResults} />
+      <FilterBar
+        categories={categories}
+        brands={brands}
+        ratings={ratings}
+        onFilterChange={handleFilterChange}
+      />
       </div>
 
       {/** Product Grid */}
-          {loading ? ( 
-            <div className="h-[30em]">
-            <Loader />
-            </div> ): (
-            <div className=" grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
-              {isFilterActive() ? filteredProducts.map((product) => (
-            <GridProductCard product={product} />
-          )) : ( products.map((product) => (
-            <GridProductCard product={product} />
-          )) )}
-            </div>
-            
-        )}
+      {loading ? (
+        <div className="h-[30em]">
+          <Loader />
+        </div>
+      ) : (
+        <div className=" flex flex-col items-center mb-8 scroll-m-[300px] md:scroll-m-[200px]" id="product-grid">
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
+            {displayedProducts.length > 0 ? (
+              displayedProducts
+                .slice(indexOfFirst, indexOfLast)
+                .map((product) => (
+                  <GridProductCard key={product.id} product={product} />
+                ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                No products found.
+              </div>
+            )}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            className="mx-auto"
+          />
+        </div>
+      )}
     </>
   );
 }

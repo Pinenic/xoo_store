@@ -96,40 +96,51 @@ export function GridProductCard({ product }) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
   return (
-  <Card imgSrc={product.thumbnail}>
-    <div className="flex flex-col justify-between h-56 w-full" >
-      <h2 className="text-sm md:text-xl font-medium md:py-1 md:p-2 line-clamp-2">{product.title}</h2>
-      <h2 className="text-xs md:text-sm font-sm md:py-1 md:p-1 line-clamp-2 ">
-        {product.title}
-        {", "}
-        {product.tags.map((tag) => captitaliseFirst(tag) + ", ")}
-        {product.brand}
-      </h2>
-      <div className="flex justify-between">
-        <h2 className="text-sm font-semibold py-2 md:p-2">K{product.price}</h2>
-        {product.color ? (
-          <div className="flex gap-2">
-            <p>Colors</p>
-            <div className="w-12 h-12 rounded-full bg-gray-900"></div>
-            <div className="w-12 h-12 rounded-full bg-green-700"></div>
-            <div className="w-12 h-12 rounded-full bg-blue-700"></div>
-          </div>
-        ) : (
-          <p className="hidden text-xs">No colors</p>
-        )}
-      </div>
-
-      <div className="flex flex-col w-full md:flex-row mt-3 justify-between lg:justify-start md:px-2 gap-2">
-        <button className="flex justify-center gap-3  items-center text-center px-3 bg-gray-700/10 text-blue-700 w-full md:w-1/2 lg:w-1/2 p-1 rounded-lg text-sm md:text-xs">
-          {" "}
-          <Heart className="w-5" /> Wishlist{" "}
-        </button>
-        <Link
-              to={`/products/${product.id}`} className="flex justify-center gap-3 items-center text-center px-3 bg-blue-700 text-white w-full md:w-1/2 lg:w-1/2 p-1 rounded-lg text-sm">
-          {" "}
-          <ShoppingCart className="w-4" /> Buy {" "}
-        </Link>
-      </div>
+  <Card
+  renderImage={() => (
+    <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-t-lg">
+      <img
+        src={product.thumbnail}
+        alt={product.title}
+        className="max-h-full max-w-full object-contain"
+      />
     </div>
-  </Card>);
+  )}
+>
+  <div className="flex flex-col justify-between h-56 w-full">
+    <h2 className="text-sm md:text-xl font-medium md:py-1 md:p-2 line-clamp-2">
+      {product.title}
+    </h2>
+    <h2 className="text-xs md:text-sm font-sm md:py-1 md:p-1 line-clamp-2">
+      {product.title}, {product.brand}
+    </h2>
+
+    <div className="flex justify-between">
+      <h2 className="text-sm font-semibold py-2 md:p-2">K{product.price}</h2>
+      {product.color ? (
+        <div className="flex gap-2">
+          <p>Colors</p>
+          <div className="w-6 h-6 rounded-full bg-gray-900"></div>
+          <div className="w-6 h-6 rounded-full bg-green-700"></div>
+          <div className="w-6 h-6 rounded-full bg-blue-700"></div>
+        </div>
+      ) : (
+        <p className="hidden text-xs">No colors</p>
+      )}
+    </div>
+
+    <div className="flex flex-col w-full md:flex-row mt-3 justify-between lg:justify-start md:px-2 gap-2">
+      <button className="flex justify-center gap-3 items-center text-center px-3 bg-gray-700/10 text-blue-700 w-full md:w-1/2 lg:w-1/2 p-1 rounded-lg text-sm md:text-xs">
+        <Heart className="w-5" /> Wishlist
+      </button>
+      <Link
+        to={`/products/${product.id}`}
+        className="flex justify-center gap-3 items-center text-center px-3 bg-blue-700 text-white w-full md:w-1/2 lg:w-1/2 p-1 rounded-lg text-sm"
+      >
+        <ShoppingCart className="w-4" /> Buy
+      </Link>
+    </div>
+  </div>
+</Card>
+);
 }

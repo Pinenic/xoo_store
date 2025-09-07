@@ -14,7 +14,7 @@ export default function ProductCard({ product }) {
       {/* Info */}
       <div>
         <h5 className="text-lg font-semibold">{product.title}</h5>
-        <p className="text-xl font-bold text-gray-900">${product.price}</p>
+        <p className="text-xl font-bold text-gray-900">K{product.price}</p>
 
         {/* Variants */}
         {product.options?.map((opt) => (

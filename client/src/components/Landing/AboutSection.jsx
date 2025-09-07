@@ -1,14 +1,16 @@
 // src/components/AboutSection.jsx
 import { Button } from "flowbite-react";
 import { ShoppingBag, Store } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AboutSection() {
+  const navigate = useNavigate()
   return (
     <section className="bg-gray-50 py-16">
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Heading */}
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          About Our Storefront
+          About Us
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-12">
           We’re making it simple to shop and sell online. Whether you’re here to
@@ -29,7 +31,8 @@ export default function AboutSection() {
               Browse thousands of products, compare deals, and check out in just
               a few clicks. Shopping made stress-free and secure.
             </p>
-            <Button color="gray" size="sm" outline>
+            <Button onClick={() => navigate("/about#buying")}
+          color="gray" size="sm" outline>
               Learn More
             </Button>
           </div>
@@ -46,7 +49,8 @@ export default function AboutSection() {
               Open your storefront, manage your products, and reach more buyers
               with tools designed to grow your business.
             </p>
-            <Button color="gray" size="sm" outline>
+            <Button onClick={() => navigate("/about#selling")}
+          color="gray" size="sm" outline>
               Learn More
             </Button>
           </div>

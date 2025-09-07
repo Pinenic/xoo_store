@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Button, TextInput, Textarea, FileInput, Select, Radio, Alert } from "flowbite-react";
+import { Button, TextInput, Textarea, Radio, Alert } from "flowbite-react";
 import useStoreApi from "../hooks/useStore";
 import { useNavigate } from "react-router-dom";
 import LoadingModal from "../components/global/spinners/LoadingModal";
+import StoreCategoryDropdown from "../components/featuresPage/StoreCategoryDropdown"; // <-- import dropdown
 
-export default function CreateStorePage({user}) {
-  const {loading, error, createStore} = useStoreApi()
+export default function CreateStorePage({ user }) {
+  const { loading, error, createStore } = useStoreApi();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function CreateStorePage({user}) {
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    if (errors[field]) setErrors({ ...errors, [field]: "" }); // Clear error on change
+    if (errors[field]) setErrors({ ...errors, [field]: "" });
   };
 
   // Validation logic
@@ -47,30 +48,31 @@ export default function CreateStorePage({user}) {
 
   const prevStep = () => setStep(step - 1);
 
- const handleSubmit = async () => {
-  if (validateStep()) {
-    const payload = new FormData();
+  const handleSubmit = async () => {
+    if (validateStep()) {
+      const payload = new FormData();
 
-    // Append all fields
-    Object.keys(formData).forEach((key) => {
-      payload.append(key, formData[key]);
-    });
+      // Append all fields
+      Object.keys(formData).forEach((key) => {
+        payload.append(key, formData[key]);
+      });
 
-    console.log("Submitting data:", formData);
+      console.log("Submitting data:", formData);
 
-    const newStore = await createStore(payload);
+      const newStore = await createStore(payload);
 
-    console.log(newStore);
-    if(!error || newStore) navigate("/store/dashboard")
-    
+      console.log(newStore);
+      if (!error || newStore) navigate("/store/dashboard");
+    }
+  };
 
-  }
-};
-
+  // Predefined store categories
+  const categories = ["Fashion", "Electronics", "Home & Kitchen"];
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md">
       <LoadingModal show={loading} message="Creating store..." />
+
       {/* Progress Header */}
       <div className="mb-6">
         <p className="text-lg font-semibold text-gray-700">
@@ -107,24 +109,19 @@ export default function CreateStorePage({user}) {
             className="mb-4"
           />
 
-          <input type="file" name="file" onChange={(e) => handleChange("file", e.target.files[0])} 
-            color={errors.logo ? "failure" : "gray"}
-            className="mb-2" />
-
-          
+          <input
+            type="file"
+            name="file"
+            onChange={(e) => handleChange("file", e.target.files[0])}
+            className="mb-2"
+          />
           {errors.logo && <p className="text-red-500 text-sm">{errors.logo}</p>}
 
-          <Select
-            onChange={(e) => handleChange("category", e.target.value)}
-            value={formData.category}
-            color={errors.category ? "failure" : "gray"}
-            className="mb-2"
-          >
-            <option value="">Select Category</option>
-            <option>Fashion</option>
-            <option>Electronics</option>
-            <option>Home & Kitchen</option>
-          </Select>
+          {/* Category Dropdown */}
+          <StoreCategoryDropdown
+            categories={categories}
+            onChange={(value) => handleChange("category", value)}
+          />
           {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
         </div>
       )}
@@ -134,16 +131,15 @@ export default function CreateStorePage({user}) {
         <div>
           <h2 className="text-xl font-bold mb-4">Payment Information</h2>
 
-          <Select
+          <select
+            className="w-full border rounded-lg px-3 py-2 mb-2"
             onChange={(e) => handleChange("paymentMethod", e.target.value)}
             value={formData.paymentMethod}
-            color={errors.paymentMethod ? "failure" : "gray"}
-            className="mb-2"
           >
             <option value="">Select Payment Method</option>
             <option>Bank Transfer</option>
             <option>Mobile Money</option>
-          </Select>
+          </select>
           {errors.paymentMethod && (
             <p className="text-red-500 text-sm">{errors.paymentMethod}</p>
           )}
@@ -204,7 +200,13 @@ export default function CreateStorePage({user}) {
         )}
       </div>
 
-      {error ? <Alert color="failure"> <span>{error}</span> </Alert>: <p></p> }
+      {error ? (
+        <Alert color="failure">
+          <span>{error}</span>
+        </Alert>
+      ) : (
+        <p></p>
+      )}
     </div>
   );
 }
