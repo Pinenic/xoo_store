@@ -8,7 +8,7 @@ const supabase = require("../index");
 router.get("/", async (req, res) => {
   const seaching = await req.query.q;
   const countLimit = (
-    await supabase.from("products").select("*").like("name", `%${seaching}%`)
+    await supabase.from("products").select("*").like("title", `%${seaching}%`)
   ).data.length;
   const limit = req.query.limit || countLimit; // Default limit to the number of matching products
   try {
