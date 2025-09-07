@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
     const { data } = await supabase
       .from("products")
       .select("*")
-      .like("name", `%${seaching}%`)
+      .like("title", `%${seaching}%`)
       .limit(limit);
     res.status(200).send(data);
   } catch (error) {
