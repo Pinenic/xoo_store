@@ -79,11 +79,15 @@ router.get("/latest/first", async (req, res) => {
 router.post("/", upload.any(), async (req, res) => {
   let array = [];
   console.log(req.body)
+  let withProduct=false;
   try {
     const uidFoimage = uuid();
     const { data } = await supabase.from("stores").select('*').eq("id", req.body.store_id);
 
     const user_id = data[0].user_id;
+    if(req.files.length>1){
+      withProduct=true
+    }
     for (const file of req.files) {
       if (file.fieldname === "file") {
         const File = fs.readFileSync(file.path);
@@ -95,7 +99,7 @@ router.post("/", upload.any(), async (req, res) => {
             contentType: "image/jpeg",
           });
 if(imageUploadedError){ return res.status(500).json({
-  data:"error try again",error:imageUploadedError.message
+  data:"check your internet connection and try again",error:imageUploadedError.message
 })}
         //this function wait until it gets the url data and asign it as ImageUrl
         const { data, error } = await supabase.storage
@@ -103,7 +107,7 @@ if(imageUploadedError){ return res.status(500).json({
           .getPublicUrl(`public-uploaded-image-${uidFoimage}.jpg`);
 
         if (error) {
-          return res.status(500).json({data:"error try again", error: error.message });
+          return res.status(500).json({data:"check your internet connection and try again", error: error.message });
         }
         const ImageUrl = data.publicUrl;
 
@@ -130,6 +134,9 @@ if(imageUploadedError){ return res.status(500).json({
             .insert([product])
             .select();
           array.push(dataForID[0].id);
+          if(withProduct===false){
+           return res.status(201).send("product created");
+          }
         } catch (error) {
           res.status(500).json({ error: error.message});
           console.log(error);
@@ -165,12 +172,15 @@ if(imageUploadedError){ return res.status(500).json({
             .from("products")
             .update({"images":obj })
             .eq("id", array[0]);
+            if(withProduct===true){
+              res.status(201).send("product created");
+            }
         
         }
         
       }
     }
-     res.status(200).send("product created");
+
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -248,13 +258,6 @@ router.delete("/:id", async (req, res) => {
   //   res.status(500).json({ error: error.message });
   // }
 });
-
-
-
-
-
-
-
 
 
 // route update the product by ID,
