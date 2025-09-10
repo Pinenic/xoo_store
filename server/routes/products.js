@@ -20,7 +20,12 @@ const upload = multer({ storage: storage });
 //this route is used to get all the products in the product table you can also pass a limit to the number of products returned using the query parameter `limit`
 router.get("/", async (req, res) => {
 
-  const limit = req.query.page || 0; 
+let limit =eval(`${req.query.page}-1`); 
+
+if(!req.query.page){
+limit=0;
+}
+
   try {
     const { data } = await supabase.from("products").select("*");
     const groupProducts=_.chunk(data,15);
