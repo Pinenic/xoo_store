@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
 const multer = require("multer");
+const _=require('lodash');
 const path = require("path");
 const fs = require("fs");
 const { v4: uuid } = require("uuid");
@@ -18,11 +19,12 @@ const upload = multer({ storage: storage });
 
 //this route is used to get all the products in the product table you can also pass a limit to the number of products returned using the query parameter `limit`
 router.get("/", async (req, res) => {
-  const countLimit = (await supabase.from("products").select("*")).data.length;
-  const limit = req.query.limit || countLimit; // Default limit to data limit if all products are requested
+
+  const limit = req.query.page || 0; 
   try {
-    const { data } = await supabase.from("products").select("*").limit(limit);
-    res.status(200).send(data);
+    const { data } = await supabase.from("products").select("*");
+    const groupProducts=_.chunk(data,15);
+    res.status(200).send(groupProducts[limit]);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
