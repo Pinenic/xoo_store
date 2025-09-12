@@ -28,10 +28,22 @@ limit=0;
     const { data} = await supabase.from("products").select("*");
     const groupProducts=_.chunk(data,15);
     if(category||brands||price||rating||maxprice||minprice){
+      let categoryArr = [];
+      let brandArr =[];
+    if (category) {
+      categoryArr = category.split(",").map(c => c.trim().toLowerCase());
+    };
+     if (brands) {
+      brandArr = brands.split(",").map(b => b.trim().toLowerCase());
+    };
+         console.log(brandArr);
+         console.log(brands);
+         
+         
     const filterProducts=data.filter(product=> {
       let keep=true;
-    if(category)    keep=keep && product.category===category;
-    if(brands)      keep=keep && product.brand===brands;
+    if(categoryArr.length>0) keep=keep && categoryArr.includes(product.category.toLowerCase());
+    if(brandArr.length>0) keep=keep && brandArr.includes(product.brand);
     if(maxprice)    keep=keep && product.price<=maxprice && product.price>=minprice;
     if(rating)      keep=keep && product.rating===rating;
     return keep;
