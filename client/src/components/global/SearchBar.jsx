@@ -1,36 +1,44 @@
 import { useState, useEffect, useRef } from "react";
-import { TextInput, Spinner, Button } from "flowbite-react";
-import { Search } from "lucide-react";
+import { Spinner } from "flowbite-react";
+import { Search, X } from "lucide-react";
 import useMarketplace from "../../hooks/uesMarketplace";
 
 export default function SearchBar({
   placeholder = "Search...",
-  onResults, // parent will receive results
+  onResults,
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
-  const { error, searchProducts } = useMarketplace();
+  const { searchProducts } = useMarketplace();
 
-  // Run search (manual or Enter press)
+  // Run search manually
   const runSearch = async (q) => {
     if (!q.trim()) return;
     setLoading(true);
     try {
       const res = await searchProducts(q);
       setResults(res || []);
-      onResults?.(res || []); // send results up to parent grid
-      setOpen(false); // 🔒 hide dropdown after search
+      onResults?.(res || []);
+      setOpen(false);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+  // Reset search
+    const resetSearch = async () => {
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+    // const all = await fetchAllProducts(); // 🔥 load everything again
+    onResults?.([]);
+  };
 
-  // Debounce live preview
+  // Debounce preview
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -41,7 +49,7 @@ export default function SearchBar({
       try {
         const res = await searchProducts(query);
         setResults(res || []);
-        setOpen(true); // preview dropdown only during typing
+        setOpen(true);
       } catch (err) {
         console.error(err);
       } finally {
@@ -62,7 +70,6 @@ export default function SearchBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle Enter key
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -70,46 +77,59 @@ export default function SearchBar({
     }
   };
 
-  // Handle selection from dropdown
   const handleSelect = (item) => {
     setQuery(item.name || item.title || item.toString());
     setOpen(false);
-    onResults?.([item]); // return just the clicked item
+    onResults?.([item]);
   };
 
   return (
-    <div ref={wrapperRef} className="relative w-full max-w-md flex gap-2">
-      <TextInput
-        icon={Search}
-        type="text"
-        placeholder={placeholder}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="flex-1"
-      />
-      <Button color="blue" onClick={() => runSearch(query)}>
-        Search
-      </Button>
+    <div
+      ref={wrapperRef}
+      className="relative w-full flex-1 max-w-md"
+    >
+      {/* Input with icon button */}
+      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="w-full px-3 py-1 text-sm focus:outline-none"
+        />{/* Reset button */}
+        {query && (
+          <button
+            onClick={resetSearch}
+            className="px-2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+        <button
+          onClick={() => runSearch(query)}
+          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 h-full rounded-r-lg text-white flex items-center justify-center"
+        >
+          {loading ? (
+            <Spinner size="sm" color="white" />
+          ) : (
+            <Search className="w-4 h-4" />
+          )}
+        </button>
+      </div>
 
       {/* Dropdown */}
       {open && results.length > 0 && (
         <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-          {loading ? (
-            <div className="p-4 flex items-center justify-center">
-              <Spinner size="sm" />
+          {results.map((item, idx) => (
+            <div
+              key={idx}
+              onClick={() => handleSelect(item)}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+            >
+              {item.name || item.title || item.toString()}
             </div>
-          ) : (
-            results.map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => handleSelect(item)}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                {item.name || item.title || item.toString()}
-              </div>
-            ))
-          )}
+          ))}
         </div>
       )}
     </div>

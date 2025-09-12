@@ -22,7 +22,7 @@ export default function AboutSection() {
           {/* Buyer Feature */}
           <div className="p-8 bg-white rounded-2xl shadow hover:shadow-lg transition">
             <div className="flex justify-center mb-4">
-              <ShoppingBag className="w-12 h-12 text-indigo-600" />
+              <ShoppingBag className="w-12 h-12 text-blue-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
               Buy with Ease
@@ -40,7 +40,7 @@ export default function AboutSection() {
           {/* Seller Feature */}
           <div className="p-8 bg-white rounded-2xl shadow hover:shadow-lg transition">
             <div className="flex justify-center mb-4">
-              <Store className="w-12 h-12 text-indigo-600" />
+              <Store className="w-12 h-12 text-blue-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
               Sell with the Best Experience

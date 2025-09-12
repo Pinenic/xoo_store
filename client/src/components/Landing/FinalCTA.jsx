@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function FinalCTA() {
   const navigate = useNavigate()
   return (
-    <section className="bg-indigo-600 text-white py-16">
+    <section className="bg-blue-600 text-white py-16">
       <div className="max-w-4xl mx-auto text-center px-6">
         <h2 className="text-3xl font-bold mb-4">
           Ready to Experience a Better Marketplace?
