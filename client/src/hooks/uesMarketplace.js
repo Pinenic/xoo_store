@@ -26,7 +26,7 @@ const useMarketplace = () => {
 
 
 // product endpoints
-  const getAllProducts = useCallback(( limit) => apiCall("get", `/products?limit=${limit}`), [apiCall]);
+  const getAllProducts = useCallback(( page, query) => apiCall("get", `/products?page=${page}&${query}`), [apiCall]);
   const getProductById = useCallback(( id) => apiCall("get", `/products/${id}`), [apiCall]);
   const getLatestProducts = useCallback(( limit) => apiCall("get", `/products?limit=${limit}`), [apiCall]);
   const searchProducts = useCallback(( query) => apiCall("get", `/seach?q=${query}`), [apiCall]);

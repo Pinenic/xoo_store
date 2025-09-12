@@ -18,14 +18,14 @@ export default function DealsCarousel({user}) {
 
   return (
     <>
-      <div className="flex flex-col mt-2 p-4">
-        <div className="flex justify-between ">
-          <h2 className="font-medium text-sm  md:text-xl md:px-8">Latest Deals</h2>
-          <a href="#" className="flex gap-3 text-xs md:text-md text-blue-700 md:px-6 md:p-2 mb-12">
+      <div className="flex flex-col mt-2">
+        <div className="flex justify-between h-10">
+          <h2 className="font-medium text-sm  md:text-xl md:px-8 h-10">Latest Deals</h2>
+          <a href="#" className="flex gap-3 text-xs md:text-md text-blue-700 md:px-6 md:p-2 mb-6 h-full">
             View more <ArrowRightIcon className="w-4 md:w-5" />
           </a>
         </div>
-        <Carousel pauseOnHover className="hidden lg:block h-72 md:h-64 lg:h-72 rounded-xl">
+        <Carousel pauseOnHover className="hidden lg:block h-72 md:h-56 lg:h-56 rounded-xl">
           {loading ? ( <p>loading...</p> ) : (imagePairs.map((pair, index) => (
             <div key={index} className="flex justify-evenly md:gap-3 ">
               {pair.map((product, idx) => (

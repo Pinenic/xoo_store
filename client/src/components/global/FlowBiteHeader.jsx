@@ -22,7 +22,7 @@ export default function FlowBiteHeader({ profile }) {
   const { signOut } = useAuth();
   return (
     <>
-      <Navbar fluid className="sticky top-0 z-50 bg-white">
+      <Navbar fluid className="sticky top-0 z-50 bg-white border border-transparent border-b-gray-200">
         <NavbarBrand href="/">
           <img src="#" alt="" />
           <span className="self-center whitespace-nowrap text-xl font-semibold text-black">
