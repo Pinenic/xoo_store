@@ -31,18 +31,16 @@ limit=0;
       let categoryArr = [];
       let brandArr =[];
     if (category) {
-      categoryArr = category.split(",").map(c => c.trim().toLowerCase());
+      categoryArr = category.split(",").map(c => c.trim());
     };
      if (brands) {
-      brandArr = brands.split(",").map(b => b.trim().toLowerCase());
+      brandArr = brands.split(",").map(b => b.trim());
     };
-         console.log(brandArr);
-         console.log(brands);
-         
+
          
     const filterProducts=data.filter(product=> {
       let keep=true;
-    if(categoryArr.length>0) keep=keep && categoryArr.includes(product.category.toLowerCase());
+    if(categoryArr.length>0) keep=keep && categoryArr.includes(product.category);
     if(brandArr.length>0) keep=keep && brandArr.includes(product.brand);
     if(maxprice)    keep=keep && product.price<=maxprice && product.price>=minprice;
     if(rating)      keep=keep && product.rating===rating;
@@ -50,7 +48,7 @@ limit=0;
     })
     const FilteredGroupProducts=_.chunk(filterProducts,15);
     const result2={
-      Products     :FilteredGroupProducts[limit],
+      Products     :FilteredGroupProducts[limit] || [],
       TotalProducts:filterProducts.length,
       PerPage      :15,
       TotalPages   :FilteredGroupProducts.length
