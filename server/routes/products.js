@@ -43,7 +43,7 @@ limit=0;
     if(categoryArr.length>0) keep=keep && categoryArr.includes(product.category);
     if(brandArr.length>0) keep=keep && brandArr.includes(product.brand);
     if(maxprice)    keep=keep && product.price<=maxprice && product.price>=minprice;
-    if(rating)      keep=keep && product.rating===rating;
+    if(rating)      keep=keep && product.rating==rating;
     return keep;
     })
     const FilteredGroupProducts=_.chunk(filterProducts,15);
@@ -455,4 +455,112 @@ const product = {
   }
 });
 
+router.post("/rating/:user_id/:product_id",async(req,res)=>{
+ try {
+  const rating=req.body.rating;
+ if(rating>=6 || rating<1){
+  return res.status(500).send('rating must be in the range of 1 to 5')
+ }
+  const {
+    data:checkReview,
+    error:checkReviewError
+  }=await supabase
+  .from('product_review')
+  .select('*')
+  .eq('user_id',req.params.user_id)
+  .eq('product_id',req.params.product_id);
+  if(checkReview[0]){
+   const user={
+    comment:req.body.comment,
+    star:req.body.rating
+  }
+const {data:result,error:resultError}= await supabase
+ .from('product_review')
+ .update(user)
+ .eq('user_id',req.params.user_id)
+ .eq('product_id',req.params.product_id)
+ .select();
+
+  const {data:productRating,error:productRatingError}= await supabase
+ .from('product_review')
+ .select('*')
+ .eq('product_id',req.params.product_id);
+  if(productRatingError){
+ return res.status(500).json({error:productRatingError.message})
+ }
+const totalReview=productRating.length;
+const totalRating=productRating.reduce((sum,rat)=>sum+rat.star/totalReview,0);
+ await supabase.from('products')
+.update({rating:totalRating.toFixed(1)})
+.eq('id',req.params.product_id);
+
+ if(resultError){
+   return res.status(500).json({error:resultError.message})
+ }
+ return res.status(200).send(result[0]);
+  }
+  if(checkReviewError){
+  res.status(500).json({error:checkReviewError.message})
+  }
+ else{
+  const user={
+    user_id:req.params.user_id,
+    product_id:req.params.product_id,
+    comment:req.body.comment,
+    star:req.body.rating
+  }
+const {data:result,error:resultError}= await supabase
+ .from('product_review')
+ .insert([user]).select();
+ if(resultError){
+    res.status(500).json({error:resultError.message})
+ }
+ const {data:productRating,productRatingError}= await supabase
+ .from('product_review')
+ .select('*')
+ .eq('product_id',req.params.product_id);
+ if(productRatingError){
+  res.status(500).json({error:productRatingError.message})
+ }
+const totalReview=productRating.length;
+const totalRating=productRating.reduce((sum,rat)=>sum+rat.star/totalReview,0)
+ await supabase.from('products')
+.update({rating:totalRating})
+.eq('id',req.params.product_id);
+ return res.status(200).send(result);
+ }
+ } catch (error) {
+  return res.status(500).json({error:error})
+ }
+ 
+})
+router.delete("/rating/:user_id/:product_id",async(req,res)=>{
+try {
+   const {data,error}=await supabase
+  .from('product_review')
+  .delete('*')
+  .eq('user_id',req.params.user_id)
+  .eq('product_id',req.params.product_id);
+  if(error){
+  res.status(500).json({error:error.message})
+  }
+
+const {data:productRating,error:productRatingError}= await supabase
+ .from('product_review')
+ .select('*')
+ .eq('product_id',req.params.product_id);
+ if(productRatingError){
+  res.status(500).json({error:productRatingError.message})
+ }
+const totalReview=productRating.length;
+const totalRating=productRating.reduce((sum,rat)=>sum+rat.star/totalReview,0);
+ await supabase.from('products')
+.update({rating:totalRating.toFixed(1)})
+.eq('id',req.params.product_id);
+
+ return res.status(200).send('review as been removed');
+} catch (error) {
+ return res.status(500).json({error})
+}
+})
 module.exports = router;
