@@ -40,7 +40,7 @@ router.get("/:id", async (req, res) => {
     return res.status(500).send(error);
   }
 });
-//the route post store as a json data with a user_id in store table
+//the routes post store as a json data with a user_id in store table
 router.post("/", upload.any(), async (req, res) => {
   let array = [];
   const user_id = req.body.user_id;
@@ -318,5 +318,50 @@ try {
   res.json({error:error.message})
 }
 });
+
+router.post("/follow/:user_id/:store_id",async(req,res)=>{
+
+  const {data:followCheck,error:followCheckError}=await supabase
+  .from('follow_store')
+  .select('*')
+  .eq('user_id',req.params.user_id)
+  .eq('store_id',req.params.store_id);
+
+  if(followCheck[0]){
+    await supabase
+    .from('follow_store')
+    .delete()
+    .eq('user_id',req.params.user_id)
+    .eq('store_id',req.params.store_id)
+   return res.status(200).send('unfollow');
+  }
+  if(followCheckError){
+    return res.status(500).json({error:followCheckError.message})
+  }
+else{
+const user={
+  store_id:req.params.store_id,
+  user_id:req.params.user_id
+}
+const {data,error}=await supabase
+  .from('follow_store')
+  .insert([user])
+  .select();
+  res.status(200).send(data)
+}
+
+})
+
+router.get("/followers/:Id",async(req,res)=>{
+  const {data,error}=await supabase
+  .from('follow_store')
+  .select('*')
+  .eq('store_id',req.params.Id);
+  if(error){
+    return res.status(500).json({error:error.message})
+  }
+  res.status(200).send(data)
+})
+
 
 module.exports = router;
