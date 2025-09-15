@@ -1,52 +1,62 @@
 import { useState } from "react";
-import { Button, TextInput, Textarea, Radio, Alert } from "flowbite-react";
-import useStoreApi from "../hooks/useStore";
+import { Button, Alert } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
+import useStoreApi from "../hooks/useStore";
 import LoadingModal from "../components/global/spinners/LoadingModal";
-import StoreCategoryDropdown from "../components/featuresPage/StoreCategoryDropdown"; // <-- import dropdown
+import StepIndicator from "../components/storeWizard/StepIndicator";
+import Step1StoreInfo from "../components/storeWizard/Step1StoreInfo";
+import Step2Media from "../components/storeWizard/Step2Media";
+import Step3Plan from "../components/storeWizard/Step3Plan";
+import Step4Payment from "../components/storeWizard/Step4Payment";
+import Step5Preview from "../components/storeWizard/Step5Preview";
+import step1 from "../assets/images/step1.svg";
+import step2 from "../assets/images/step2.svg";
+import step3 from "../assets/images/step3.svg";
+import step4 from "../assets/images/step4.svg";
+import step5 from "../assets/images/step5.svg";
 
 export default function CreateStorePage({ user }) {
   const { loading, error, createStore } = useStoreApi();
+  const navigate = useNavigate();
+  const imageArr= [step1,step2,step3,step4,step5]
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     user_id: user.id,
     storeName: "",
     description: "",
-    file: null,
     category: "",
+    file: null,
+    banner: null,
+    plan: "individual",
     paymentMethod: "",
     accountNumber: "",
-    plan: "individual",
   });
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    if (errors[field]) setErrors({ ...errors, [field]: "" });
+    setErrors({...error, [field]: ""})
   };
-
   // Validation logic
   const validateStep = () => {
     let newErrors = {};
     if (step === 1) {
       if (!formData.storeName.trim()) newErrors.storeName = "Store name is required";
       if (!formData.description.trim()) newErrors.description = "Description is required";
-      if (!formData.file) newErrors.logo = "Please upload a store logo";
       if (!formData.category) newErrors.category = "Select a category";
     } else if (step === 2) {
+      if (!formData.file) newErrors.file = "Please upload a store logo";
+      if (!formData.banner) newErrors.banner = "Please upload a store banner"
+    }
+      else if(step === 4){
       if (!formData.paymentMethod) newErrors.paymentMethod = "Select a payment method";
       if (!formData.accountNumber.trim()) newErrors.accountNumber = "Enter your account number";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const nextStep = () => {
-    if (validateStep()) setStep(step + 1);
-  };
-
-  const prevStep = () => setStep(step - 1);
+  const nextStep = () => {if(validateStep())setStep((s) => s + 1)};
+  const prevStep = () => setStep((s) => s - 1);
 
   const handleSubmit = async () => {
     if (validateStep()) {
@@ -66,147 +76,50 @@ export default function CreateStorePage({ user }) {
     }
   };
 
-  // Predefined store categories
-  const categories = ["Fashion", "Electronics", "Home & Kitchen"];
-
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md">
+    <div className="flex flex-col-reverse md:flex-row w-screen justify-evenly min-h-[500px] mx-auto gap-8 p-6 mb-4">
       <LoadingModal show={loading} message="Creating store..." />
 
-      {/* Progress Header */}
-      <div className="mb-6">
-        <p className="text-lg font-semibold text-gray-700">
-          Step {step} of 3
-        </p>
-        <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
-          <div
-            className="bg-blue-600 h-2 rounded-full transition-all"
-            style={{ width: `${(step / 3) * 100}%` }}
-          ></div>
-        </div>
-      </div>
+      {/* Left: Form */}
+      <div className="md:w-1/2 lg:w-[40%]">
+        {step === 1 && <Step1StoreInfo formData={formData} onChange={handleChange} errors={errors} />}
+        {step === 2 && <Step2Media formData={formData} onChange={handleChange} errors={errors}  />}
+        {step === 3 && <Step3Plan formData={formData} onChange={handleChange} />}
+        {step === 4 && <Step4Payment formData={formData} onChange={handleChange} errors={errors}  />}
+        {step === 5 && <Step5Preview formData={formData} />}
 
-      {/* Step 1: Store Info */}
-      {step === 1 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Store Information</h2>
-
-          <TextInput
-            placeholder="Enter store name"
-            value={formData.storeName}
-            onChange={(e) => handleChange("storeName", e.target.value)}
-            color={errors.storeName ? "failure" : "gray"}
-            helpertext={errors.storeName}
-            className="mb-4"
-          />
-
-          <Textarea
-            placeholder="Describe your store"
-            value={formData.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            color={errors.description ? "failure" : "gray"}
-            helpertext={errors.description}
-            className="mb-4"
-          />
-
-          <input
-            type="file"
-            name="file"
-            onChange={(e) => handleChange("file", e.target.files[0])}
-            className="mb-2"
-          />
-          {errors.logo && <p className="text-red-500 text-sm">{errors.logo}</p>}
-
-          {/* Category Dropdown */}
-          <StoreCategoryDropdown
-            categories={categories}
-            onChange={(value) => handleChange("category", value)}
-          />
-          {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
-        </div>
-      )}
-
-      {/* Step 2: Payment Info */}
-      {step === 2 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Payment Information</h2>
-
-          <select
-            className="w-full border rounded-lg px-3 py-2 mb-2"
-            onChange={(e) => handleChange("paymentMethod", e.target.value)}
-            value={formData.paymentMethod}
-          >
-            <option value="">Select Payment Method</option>
-            <option>Bank Transfer</option>
-            <option>Mobile Money</option>
-          </select>
-          {errors.paymentMethod && (
-            <p className="text-red-500 text-sm">{errors.paymentMethod}</p>
+        {/* Navigation */}
+        <div className="flex justify-between mt-6">
+          {step > 1 && (
+            <Button color="gray" onClick={prevStep}>
+              Back
+            </Button>
           )}
-
-          <TextInput
-            placeholder="Enter account number"
-            value={formData.accountNumber}
-            onChange={(e) => handleChange("accountNumber", e.target.value)}
-            color={errors.accountNumber ? "failure" : "gray"}
-            helpertext={errors.accountNumber}
-            className="mb-2"
-          />
+          {step < 5 ? (
+            <Button onClick={nextStep}>Next</Button>
+          ) : (
+            <Button color="success" onClick={handleSubmit}>
+              Create Store
+            </Button>
+          )}
         </div>
-      )}
 
-      {/* Step 3: Seller Plan */}
-      {step === 3 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Choose Your Seller Plan</h2>
-
-          <div className="flex items-center gap-4 mb-4">
-            <Radio
-              id="individual"
-              name="plan"
-              value="individual"
-              checked={formData.plan === "individual"}
-              onChange={(e) => handleChange("plan", e.target.value)}
-            />
-            <label htmlFor="individual">Individual (Free)</label>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Radio
-              id="professional"
-              name="plan"
-              value="professional"
-              checked={formData.plan === "professional"}
-              onChange={(e) => handleChange("plan", e.target.value)}
-            />
-            <label htmlFor="professional">Professional (K20/month)</label>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between mt-6">
-        {step > 1 && (
-          <Button color="gray" onClick={prevStep}>
-            Back
-          </Button>
-        )}
-        {step < 3 ? (
-          <Button onClick={nextStep}>Next</Button>
-        ) : (
-          <Button color="success" onClick={handleSubmit}>
-            Create Store
-          </Button>
+        {error && (
+          <Alert color="failure" className="mt-4">
+            <span>{error}</span>
+          </Alert>
         )}
       </div>
 
-      {error ? (
-        <Alert color="failure">
-          <span>{error}</span>
-        </Alert>
-      ) : (
-        <p></p>
-      )}
+      {/* Right: Step indicator + Illustration */}
+      <div className="flex flex-col items-center justify-between bg-gray-50 rounded-xl p-6 md:w-1/2 lg:w-[40%]">
+        <StepIndicator step={step} totalSteps={5}/>
+        <img
+          src={imageArr[step-1]}
+          alt="Step illustration"
+          className="hidden md:flex mt-6 w-3/4"
+        />
+      </div>
     </div>
   );
 }

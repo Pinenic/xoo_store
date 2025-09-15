@@ -29,7 +29,7 @@ const useMarketplace = () => {
   const getAllProducts = useCallback(( page, query) => apiCall("get", `/products?page=${page}&${query}`), [apiCall]);
   const getProductById = useCallback(( id) => apiCall("get", `/products/${id}`), [apiCall]);
   const getLatestProducts = useCallback(( limit) => apiCall("get", `/products?limit=${limit}`), [apiCall]);
-  const searchProducts = useCallback(( query) => apiCall("get", `/seach?q=${query}`), [apiCall]);
+  const searchProducts = useCallback((page, query) => apiCall("get", `/seach?page=${page}&q=${query}`), [apiCall]);
 
 
   return {

@@ -17,7 +17,7 @@ const useStoreApi = () => {
       });
       return response.data;
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.response?.data?.error || "Something went wrong");
       throw err;
     } finally {
       setLoading(false);

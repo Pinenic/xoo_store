@@ -6,22 +6,24 @@ import useMarketplace from "../../hooks/uesMarketplace";
 export default function SearchBar({
   placeholder = "Search...",
   onResults,
+  setSearchQuery,
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const defaultPage = 1;
   const wrapperRef = useRef(null);
   const { searchProducts } = useMarketplace();
 
   // Run search manually
-  const runSearch = async (q) => {
+  const runSearch = async (page, q) => {
     if (!q.trim()) return;
     setLoading(true);
     try {
-      const res = await searchProducts(q);
-      setResults(res || []);
-      onResults?.(res || []);
+      const res = await searchProducts(page, q);
+      setResults(res.Products || []);
+      onResults?.(res.Products || []);
       setOpen(false);
     } catch (err) {
       console.error(err);
@@ -30,8 +32,9 @@ export default function SearchBar({
     }
   };
   // Reset search
-    const resetSearch = async () => {
+  const resetSearch = async () => {
     setQuery("");
+    setSearchQuery("");
     setResults([]);
     setOpen(false);
     // const all = await fetchAllProducts(); // 🔥 load everything again
@@ -47,8 +50,8 @@ export default function SearchBar({
     const delayDebounce = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await searchProducts(query);
-        setResults(res || []);
+        const res = await searchProducts(defaultPage, query);
+        setResults(res.Products || []);
         setOpen(true);
       } catch (err) {
         console.error(err);
@@ -73,21 +76,20 @@ export default function SearchBar({
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      runSearch(query);
+      setSearchQuery(query);
+      runSearch(defaultPage, query);
     }
   };
 
   const handleSelect = (item) => {
     setQuery(item.name || item.title || item.toString());
+    setSearchQuery(item.name || item.title || item.toString());
     setOpen(false);
     onResults?.([item]);
   };
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative w-full flex-1 max-w-md"
-    >
+    <div ref={wrapperRef} className="relative w-full flex-1 max-w-md">
       {/* Input with icon button */}
       <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
         <input
@@ -97,7 +99,8 @@ export default function SearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           className="w-full px-3 py-1 text-sm focus:outline-none"
-        />{/* Reset button */}
+        />
+        {/* Reset button */}
         {query && (
           <button
             onClick={resetSearch}
@@ -107,7 +110,10 @@ export default function SearchBar({
           </button>
         )}
         <button
-          onClick={() => runSearch(query)}
+          onClick={() => {
+            setSearchQuery(query);
+            runSearch(defaultPage, query);
+          }}
           className="px-3 py-2 bg-blue-600 hover:bg-blue-700 h-full rounded-r-lg text-white flex items-center justify-center"
         >
           {loading ? (

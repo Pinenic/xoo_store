@@ -123,7 +123,10 @@ export default function App() {
           </Route>
         </Routes>
       </main>
+        {/* Footer is always at the bottom */}
+      <footer className="shrink-0">
         <MainFooter />
+      </footer>
       </Router>
     </div>
   );
