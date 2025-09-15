@@ -42,7 +42,7 @@ export default function StoreFront() {
   return (
     <div>
       {loading ? (<> <FullScreenSpinner show={loading}/> </>) : (<><StoreHero
-        bannerUrl="https://picsum.photos/1200/400"
+        bannerUrl={store.banner || "https://picsum.photos/1200/400"}
         logoUrl={store.store_logo_url}
         storeName={store.store_name}
         tagline={store.description}

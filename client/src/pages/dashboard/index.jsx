@@ -3,14 +3,25 @@ import { useEffect, useState } from "react";
 import { useStoreCtx } from "../../context/useStoreCtx";
 import useProducts from "../../hooks/useProductSupa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import useStoreApi from "../../hooks/useStore";
 
 export default function Overview() {
   const { store } = useStoreCtx();
-  const { list } = useProducts(store.id);
+  const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
+  const { error, getInventory} = useStoreApi();
 
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await getInventory(store.id);
+      error ? console.log(error) : setProducts(data);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    list().then(setProducts).catch(console.error);
+    load()
   },[]);
 
   const chartData = products.map(p => ({ name: p.title, stock: p.stock ?? 0 }));

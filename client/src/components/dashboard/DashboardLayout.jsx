@@ -31,7 +31,7 @@ export default function DashboardLayout() {
         .from("stores")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .single()
 
       if (error?.code === "PGRST116") {
         console.warn("⚠️ No store found. Redirecting to /create-store");
