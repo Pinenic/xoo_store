@@ -22,11 +22,11 @@ limit=0;
       .ilike("title", `%${seaching}%`);
        if(error){ return res.status(500).json({error:error.message})}
 
-      let groupSeachResult=_.chunk(data,15);
+      let groupSeachResult=_.chunk(data,24);
       let result={
       Products     :groupSeachResult[limit],
       TotalProducts:data.length,
-      PerPage      :15,
+      PerPage      :24,
       TotalPages   :groupSeachResult.length
     }
 
@@ -36,12 +36,12 @@ limit=0;
       .select("*")
       .ilike("category", `%${seaching}%`);
        if(error2){ return res.status(500).json({error:error2.message})}
-        groupSeachResult=_.chunk(data2,15);
+        groupSeachResult=_.chunk(data2,24);
 
         result={
       Products     :groupSeachResult[limit],
       TotalProducts:data2.length,
-      PerPage      :15,
+      PerPage      :24,
       TotalPages   :groupSeachResult.length
     }
 
@@ -51,12 +51,12 @@ limit=0;
       .select("*")
       .ilike("brand", `%${seaching}%`);
       if(error3){ return res.status(500).json({error:error3.message})}
-        groupSeachResult=_.chunk(data3,15);
+        groupSeachResult=_.chunk(data3,24);
 
         result={
       Products     :groupSeachResult[limit],
       TotalProducts:data3.length,
-      PerPage      :15,
+      PerPage      :24,
       TotalPages   :groupSeachResult.length
     }
 
