@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
 const multer = require("multer");
+const sharp=require('sharp');
 const _=require('lodash');
 const path = require("path");
 const fs = require("fs");
@@ -26,7 +27,7 @@ limit=0;
 }
   try { 
     const { data} = await supabase.from("products").select("*");
-    const groupProducts=_.chunk(data,15);
+    const groupProducts=_.chunk(data,24);
     if(category||brands||price||rating||maxprice||minprice){
       let categoryArr = [];
       let brandArr =[];
@@ -46,11 +47,11 @@ limit=0;
     if(rating)      keep=keep && product.rating==rating;
     return keep;
     })
-    const FilteredGroupProducts=_.chunk(filterProducts,15);
+    const FilteredGroupProducts=_.chunk(filterProducts,24);
     const result2={
       Products     :FilteredGroupProducts[limit] || [],
       TotalProducts:filterProducts.length,
-      PerPage      :15,
+      PerPage      :24,
       TotalPages   :FilteredGroupProducts.length
     }
  return res.status(200).send(result2);
@@ -58,7 +59,7 @@ limit=0;
     const result={
       Products     :groupProducts[limit],
       TotalProducts:data.length,
-      PerPage      :15,
+      PerPage      :24,
       TotalPages   :groupProducts.length
     }
     return res.status(200).send(result);
@@ -128,9 +129,14 @@ router.post("/", upload.any(), async (req, res) => {
       withProduct=true
     }
     for (const file of req.files) {
+
       if (file.fieldname === "file") {
-        const File = fs.readFileSync(file.path);
-        
+        const File= await sharp(fs.readFileSync(file.path))
+        .resize(1080) // max width 1080px
+        .jpeg({ quality: 80 }) // compress jpeg
+        .toBuffer();
+
+
         // this function waits until the product image is posted in the storage
       const   {data:imageUploaded,error:imageUploadedError}= await supabase.storage
           .from(`user_uploads/${user_id}/products`)
@@ -185,7 +191,11 @@ if(imageUploadedError){ return res.status(500).json({
       if (await array.length > 0) {
         if (file.fieldname === "files") {
           const uidFoimages =uuid()
-          const File = fs.readFileSync(file.path);
+          const File = await sharp(fs.readFileSync(file.path))
+        .resize(1080) // max width 1080px
+        .jpeg({ quality: 80 }) // compress jpeg
+        .toBuffer();
+
           await supabase.storage
             .from(`user_uploads/${user_id}/products`)
             .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
@@ -298,7 +308,6 @@ router.delete("/:id", async (req, res) => {
   // }
 });
 
-
 // route update the product by ID,
 // the ID is passed through the params
 router.put("/:id", upload.any(), async (req, res) => {
@@ -322,7 +331,10 @@ router.put("/:id", upload.any(), async (req, res) => {
       for (const file of req.files) {
         if (file.fieldname === "file") {
           const uidFoimage = uuid();
-        const File = fs.readFileSync(file.path);
+        const File = await sharp(fs.readFileSync(file.path))
+        .resize(1080) // max width 1080px
+        .jpeg({ quality: 80 }) // compress jpeg
+        .toBuffer();
 
  //deleting the pre image while update the new one
         const pre_image_url = data[0].thumbnail.split("/");
@@ -389,7 +401,10 @@ if(imageUploadedError){ return res.status(500).json({
             }
             isReset = true;
             const uidFoimages = uuid();
-            const File = fs.readFileSync(file.path);
+            const File = await sharp(fs.readFileSync(file.path))
+        .resize(1080) // max width 1080px
+        .jpeg({ quality: 80 }) // compress jpeg
+        .toBuffer();
             await supabase.storage
               .from(`user_uploads/${user_id}/products`)
               .upload(`public-uploaded-image-${uidFoimages}.jpg`, File, {
@@ -455,6 +470,8 @@ const product = {
   }
 });
 
+//this route post rating for a product it requires a user ID and a product ID
+//if you send the request again with same details it will update
 router.post("/rating/:user_id/:product_id",async(req,res)=>{
  try {
   const rating=req.body.rating;
@@ -534,6 +551,8 @@ const totalRating=productRating.reduce((sum,rat)=>sum+rat.star/totalReview,0)
  }
  
 })
+
+//this route delete rating for a product it requires a user ID and a product ID
 router.delete("/rating/:user_id/:product_id",async(req,res)=>{
 try {
    const {data,error}=await supabase

@@ -60,7 +60,10 @@ router.post("/", upload.any(), async (req, res) => {
 
   for (const file of req.files) {
     if (file.fieldname === "file") {
-      const File = fs.readFileSync(file.path);
+      const File = await sharp(fs.readFileSync(file.path))
+              .resize(1080) // max width 1080px
+              .jpeg({ quality: 80 }) // compress jpeg
+              .toBuffer();;
       const uidForStore = uuid();
       try {
         // this function waits until the product image is posted in the storage
@@ -108,7 +111,10 @@ router.post("/", upload.any(), async (req, res) => {
     if ((await array.length) > 0) {
       if (file.fieldname === "banner") {
         const uidFoimages = uuid();
-        const File = fs.readFileSync(file.path);
+        const File = await sharp(fs.readFileSync(file.path))
+                .resize(1080) // max width 1080px
+                .jpeg({ quality: 80 }) // compress jpeg
+                .toBuffer();
         //this function upload a banner
         await supabase.storage
           .from(`user_uploads/${user_id}/products`)
@@ -201,7 +207,10 @@ try {
     if(error){
       return res.send({'error':error.message})
     }
-    const File = fs.readFileSync(file.path);
+    const File = await sharp(fs.readFileSync(file.path))
+            .resize(1080) // max width 1080px
+            .jpeg({ quality: 80 }) // compress jpeg
+            .toBuffer();
     const uidForStore = uuid();
  
     
@@ -251,7 +260,10 @@ try {
     if(error){
       return res.send({'error':error.message})
     }
-    const File = fs.readFileSync(file.path);
+    const File = await sharp(fs.readFileSync(file.path))
+            .resize(1080) // max width 1080px
+            .jpeg({ quality: 80 }) // compress jpeg
+            .toBuffer();
     const uidForStore = uuid();
  
     
