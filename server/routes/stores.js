@@ -63,7 +63,7 @@ router.post("/", upload.any(), async (req, res) => {
       const File = await sharp(fs.readFileSync(file.path))
               .resize(1080) // max width 1080px
               .jpeg({ quality: 80 }) // compress jpeg
-              .toBuffer();;
+              .toBuffer();
       const uidForStore = uuid();
       try {
         // this function waits until the product image is posted in the storage
