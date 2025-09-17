@@ -131,8 +131,8 @@ router.post("/", upload.any(), async (req, res) => {
 
       if (file.fieldname === "file") {
         const File= await sharp(fs.readFileSync(file.path))
-        .resize(1080) // max width 1080px
-        .jpeg({ quality: 80 }) // compress jpeg
+        .resize({ width: 1080, withoutEnlargement: true }) // max width 1080px
+        .jpeg({ quality: 70 }) // compress jpeg
         .toBuffer();
 
 
@@ -191,8 +191,8 @@ if(imageUploadedError){ return res.status(500).json({
         if (file.fieldname === "files") {
           const uidFoimages =uuid()
           const File = await sharp(fs.readFileSync(file.path))
-        .resize(1080) // max width 1080px
-        .jpeg({ quality: 80 }) // compress jpeg
+        .resize({ width: 1080, withoutEnlargement: true }) // max width 1080px
+        .jpeg({ quality: 70 }) // compress jpeg
         .toBuffer();
 
           await supabase.storage
@@ -331,8 +331,8 @@ router.put("/:id", upload.any(), async (req, res) => {
         if (file.fieldname === "file") {
           const uidFoimage = uuid();
         const File = await sharp(fs.readFileSync(file.path))
-        .resize(1080) // max width 1080px
-        .jpeg({ quality: 80 }) // compress jpeg
+        .resize({ width: 1080, withoutEnlargement: true }) // max width 1080px
+        .jpeg({ quality: 70 }) // compress jpeg
         .toBuffer();
 
  //deleting the pre image while update the new one
@@ -401,8 +401,8 @@ if(imageUploadedError){ return res.status(500).json({
             isReset = true;
             const uidFoimages = uuid();
             const File = await sharp(fs.readFileSync(file.path))
-        .resize(1080) // max width 1080px
-        .jpeg({ quality: 80 }) // compress jpeg
+        .resize({ width: 1080, withoutEnlargement: true }) // max width 1080px
+        .jpeg({ quality: 70 }) // compress jpeg
         .toBuffer();
             await supabase.storage
               .from(`user_uploads/${user_id}/products`)
