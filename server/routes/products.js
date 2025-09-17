@@ -118,7 +118,6 @@ router.get("/latest/first", async (req, res) => {
 //at first it get the product as json data with a store ID then it post to the product table
 router.post("/", upload.any(), async (req, res) => {
   let array = [];
-  console.log(req.body)
   let withProduct=false;
   try {
     const uidFoimage = uuid();
