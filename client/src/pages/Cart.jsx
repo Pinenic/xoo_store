@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import CartCard from "../components/cart/CartCard";
 
 export default function Cart({user}) {
-    const { items, fetchCart, addToCart, updateQuantity, removeFromCart, clearCart, loading } = useCartStore();
+    const { items, fetchCart, addToCart, updateQuantity, removeFromCart, clearCart, checkout, loading } = useCartStore();
     const getTotal = useCartStore((state) => state.getTotal)
     const total = getTotal()
     const savings = 19
@@ -61,13 +61,14 @@ export default function Cart({user}) {
           </div>
 
           <div className="flex flex-col w-full  mt-3 justify-between lg:justify-start px-2 gap-2">
-            <Link
+            <button
               to={`/`}
               className="flex justify-center gap-3 items-center text-center p-2 bg-blue-700 text-white rounded-lg text-sm"
+              onClick={() => checkout(user.id)}
             >
               {" "}
               Proceed to checkout{" "}
-            </Link>
+            </button>
             <p  className="flex justify-center gap-3 items-center text-center px-3text-white w-full p-1 rounded-lg text-sm">or <Link to={"/marketplace"}
            >Continue Shopping</Link></p>
           </div>

@@ -30,6 +30,7 @@ import StoreFront from "./StoreFront";
 import MainFooter from "../components/global/Footer";
 import ScrollToTop from "../components/global/ScrollToTop";
 import About from "./About";
+import SuccessPage from "./SuccessPage";
 
 export default function App() {
   const { init, loading, user } = useAuth();
@@ -86,6 +87,10 @@ export default function App() {
           {/* Protected pages */}
           <Route element={<ProtectedRoute />}>
             <Route path="/cart" element={<Cart user={user} />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/payment-success" element={<SuccessPage user={user} />} />
           </Route>
 
           <Route
