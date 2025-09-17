@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
 const multer = require("multer");
+const sharp=require("sharp");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuid } = require("uuid");
