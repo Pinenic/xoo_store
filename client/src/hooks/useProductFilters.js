@@ -24,7 +24,7 @@ export default function useProductFilters() {
         // // Extract unique brands
         // const uniqueBrands = [...new Set(allProducts.map((p) => p.brand))];
         setBrands(prodData);
-        console.log("the brands:", uniqueBrands)
+        console.log("the brands:", prodData)
 
         // Extract rounded ratings
         // const uniqueRatings = [...new Set(allProducts.map((p) => Math.floor(p.rating)))].sort((a, b) => a - b);

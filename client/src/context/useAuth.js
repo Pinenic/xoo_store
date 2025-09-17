@@ -4,8 +4,10 @@ import { useProfile } from './useProfile';
 import { useCartStore } from './useCart';
 
 // Helper: Ensure user folder is created before proceeding
-async function initUserFolderEnsureCreated(userId, retries = 3, delayMs = 500) {
-  const edgeFunctionUrl = `${import.meta.env.VITE_EDGE_FUNCTION_CUF}/functions/v1/init-user-folder`; // replace with your function name
+async function initUserFolderEnsureCreated(userId, retries = 2, delayMs = 1000) {
+  const edgeFunctionUrl = `${import.meta.env.VITE_EDGE_FUNCTION_CUF}/functions/v1/init-user-folder`;
+
+  let lastError;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -13,23 +15,32 @@ async function initUserFolderEnsureCreated(userId, retries = 3, delayMs = 500) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANNON_KEY}`, // optional if public
+          // Only include if your edge fn requires auth:
+          // 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ user: { id: userId } }),
       });
 
       const result = await res.json();
-      if (res.ok) return result;
 
-      console.warn(`Edge Function attempt ${attempt} failed:`, result.error);
+      if (res.ok) {
+        console.info(`initUserFolderEnsureCreated succeeded on attempt ${attempt}`);
+        return result; // { message: 'Folder created successfully!' }
+      }
+
+      lastError = result.error || 'Unknown edge function error';
+      console.warn(`initUserFolderEnsureCreated attempt ${attempt} failed:`, lastError);
     } catch (err) {
-      console.warn(`Edge Function attempt ${attempt} threw an error:`, err);
+      lastError = err.message || err;
+      console.warn(`initUserFolderEnsureCreated attempt ${attempt} threw:`, err);
     }
 
-    if (attempt < retries) await new Promise(res => setTimeout(res, delayMs));
+    if (attempt < retries) {
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
   }
 
-  throw new Error('Failed to initialize user folder after multiple attempts.');
+  throw new Error(`Failed to initialize user folder after ${retries} attempts. Last error: ${lastError}`);
 }
 
 export const useAuth = create((set, get) => ({
