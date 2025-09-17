@@ -168,7 +168,7 @@ if(imageUploadedError){ return res.status(500).json({
           category:req.body.category,
           brand:req.body.brand,
           shipping_information:req.body.shipping_imformation,
-          tags:null,
+          tags:req.body.tags.split(",").map(t => t.trim()),
         };
 
         // this function insert the product json data into the products table
