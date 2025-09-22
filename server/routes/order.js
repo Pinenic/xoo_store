@@ -1,15 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../index");
-//this route gets all orders in the orders table
-router.get("/", async (req, res) => {
-  try {
-    const { data } = await supabase.from("orders").select("*");
-    res.status(200).send(data);
-  } catch (error) {
-    return res.status(500).json({ error: error });
-  }
-});
+
 //this route gets order by ID in the orders table
 router.get("/by/:id", async (req, res) => {
   try {
@@ -22,15 +14,7 @@ router.get("/by/:id", async (req, res) => {
     return res.status(500).json({ error: error });
   }
 });
-//this route gets all order items in the order_items table
-router.get("/items", async (req, res) => {
-  try {
-    const { data } = await supabase.from("order_items").select("*");
-    res.status(200).send(data);
-  } catch (error) {
-    return res.status(500).json({ error: error });
-  }
-});
+
 //this route gets order items by ID in the order_items table
 router.get("/items/by/:id", async (req, res) => {
   try {
