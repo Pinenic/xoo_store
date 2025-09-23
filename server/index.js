@@ -24,6 +24,7 @@ const seachRoute = require("./routes/seachingEng");
 const orderRoute = require("./routes/order");
 const wishListRoute= require("./routes/wishList");
 const getFilterRoute= require("./routes/getFilter");
+const notificationRoute= require("./routes/notification");
 //API
 const api = process.env.API_ROOT;
 
@@ -37,6 +38,7 @@ app.use(`/${api}/seach`, seachRoute);
 app.use(`/${api}/orders`, orderRoute);
 app.use(`/${api}/filter`, getFilterRoute);
 app.use(`/${api}/wishlist`, wishListRoute);
+app.use(`/${api}/notification`, notificationRoute);
 
 const port = process.env.PORT || 4000;
 
