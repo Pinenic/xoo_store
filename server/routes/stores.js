@@ -103,8 +103,8 @@ router.post("/", upload.any(), async (req, res) => {
        const {data:dataForID}=
        await supabase.from("stores")
        .insert([store]).select();
+        res.status(201).send("created");
         array.push(dataForID[0].id);
-      res.status(201).send("created");
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
