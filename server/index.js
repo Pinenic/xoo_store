@@ -38,7 +38,7 @@ app.use(`/${api}/seach`, seachRoute);
 app.use(`/${api}/orders`, orderRoute);
 app.use(`/${api}/filter`, getFilterRoute);
 app.use(`/${api}/wishlist`, wishListRoute);
-app.use(`/${api}/notification`, notificationRoute);
+//app.use(`/${api}/notification`, notificationRoute);
 
 const port = process.env.PORT || 4000;
 
